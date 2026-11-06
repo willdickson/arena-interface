@@ -4,6 +4,8 @@ Python host library for the **G6 arena controller** (Teensy 4.1) over USB
 serial. It replaces the JavaScript host library with a blocking, fully
 type-hinted Python API for scripts and notebooks.
 
+**Documentation:** https://willdickson.github.io/arena-interface/
+
 ```python
 from arena_interface import Device, TrialMode
 
@@ -50,7 +52,7 @@ pip install "/path/to/arena-interface[numpy]"
 ```
 
 On Linux, install PJRC's Teensy udev rules so your user can open the port;
-see [Getting started](docs/getting-started.md).
+see [Getting started](https://willdickson.github.io/arena-interface/getting-started/).
 
 ## Examples
 
@@ -66,15 +68,20 @@ See [examples/README.md](examples/README.md) for the full list.
 
 ## Documentation
 
-The documentation (getting started, user guide, examples, protocol
-reference, API reference) is in `docs/` and builds with MkDocs:
+The documentation is published at
+**https://willdickson.github.io/arena-interface/**: getting started, user
+guide, examples, protocol reference and API reference.
+
+Its source is in `docs/` and builds with MkDocs:
 
 ```bash
-uv run mkdocs serve        # then open http://127.0.0.1:8000
+uv run mkdocs serve        # local preview at http://127.0.0.1:8000
+uv run mkdocs gh-deploy --strict   # publish to GitHub Pages
 ```
 
 The wire protocol, including where the firmware and the JavaScript host
-differ, is described in [docs/PROTOCOL.md](docs/PROTOCOL.md).
+differ, is described in the
+[protocol reference](https://willdickson.github.io/arena-interface/PROTOCOL/).
 
 ## Tests
 
