@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run *)",
+      "Bash(NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict)"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+site/
+dist/
+*.egg-info/
+samples.csv
+reference
+
+# Files written by the examples (default output names)
+grating.pat
+analog_samples.csv
+frame_log.csv
+experiment_logs/
+ao_calibration.csv
+analog_plot.png
+.ipynb_checkpoints/

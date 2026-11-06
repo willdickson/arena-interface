@@ -1,0 +1,62 @@
+[project]
+name = "arena-interface"
+version = "0.1.0"
+description = "Python host library for the G6 arena controller (Teensy 4.1) over USB serial"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Will Dickson", email = "wbd@caltech.edu" }]
+requires-python = ">=3.11"
+dependencies = [
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+numpy = [
+    "numpy>=2.2.6",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.3.0",
+    "matplotlib>=3.10.9",
+    "mkdocs-material>=9.7.7",
+    "mkdocstrings[python]>=1.0.6",
+    "mypy>=2.4.1",
+    "nbclient>=0.11.0",
+    "nbformat>=5.11.1",
+    "numpy>=2.2.6",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+    "types-pyserial>=3.5.0.20261030",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "src"]
+addopts = "-m 'not hardware' --doctest-modules"
+markers = ["hardware: requires a connected device (run with -m hardware)"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.format]
+exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+"examples/**" = ["D103"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
