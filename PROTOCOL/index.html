@@ -1,0 +1,2881 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python host library for the G6 arena controller">
+      
+      
+      
+        <link rel="canonical" href="https://willdickson.github.io/arena-interface/PROTOCOL/">
+      
+      
+        <link rel="prev" href="../examples/">
+      
+      
+        <link rel="next" href="../api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Protocol reference - arena-interface</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#wire-protocol" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="arena-interface" class="md-header__button md-logo" aria-label="arena-interface" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            arena-interface
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Protocol reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/willdickson/arena-interface" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willdickson/arena-interface
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="arena-interface" class="md-nav__button md-logo" aria-label="arena-interface" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    arena-interface
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/willdickson/arena-interface" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willdickson/arena-interface
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#serial-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serial settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arena-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arena variants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message framing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message framing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host → device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-response-frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: response frame
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-bulk-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: bulk data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-diagnostic-text-debug_serial-builds-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: diagnostic text (DEBUG_SERIAL builds only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#display-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Display control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sd-card-pattern-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SD card / pattern library
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analog-digital-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analog / digital I/O
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-health-and-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity, health and diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#panel-firmware-in-system-programming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel firmware (in-system programming)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reserved-rejected-opcodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reserved / rejected opcodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capability-and-feature-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capability and feature flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pattern-file-format-pat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern file format (.pat)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pattern file format (.pat)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#header-18-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header (18 bytes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frames
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#panel-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel block
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#telemetry-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Telemetry records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asynchronous-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-glyph-side-effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error glyph side effect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#malformed-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Malformed input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#refresh-rate-and-measured-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refresh rate and measured performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quirks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discrepancies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discrepancies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-side-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host-side decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#serial-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serial settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arena-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arena variants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message framing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message framing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host → device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-response-frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: response frame
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-bulk-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: bulk data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-host-diagnostic-text-debug_serial-builds-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device → host: diagnostic text (DEBUG_SERIAL builds only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#display-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Display control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sd-card-pattern-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SD card / pattern library
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analog-digital-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analog / digital I/O
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-health-and-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity, health and diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#panel-firmware-in-system-programming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel firmware (in-system programming)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reserved-rejected-opcodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reserved / rejected opcodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capability-and-feature-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capability and feature flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pattern-file-format-pat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern file format (.pat)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pattern file format (.pat)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#header-18-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header (18 bytes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frames
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#panel-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel block
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#telemetry-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Telemetry records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asynchronous-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-glyph-side-effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error glyph side effect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#malformed-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Malformed input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#refresh-rate-and-measured-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refresh rate and measured performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quirks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discrepancies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discrepancies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-side-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host-side decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="wire-protocol">Wire Protocol<a class="headerlink" href="#wire-protocol" title="Permanent link">&para;</a></h1>
+<p>This page describes the USB-serial protocol spoken by the G6 arena controller
+firmware (Teensy 4.1). It was derived from <code>reference/firmware/</code> (the source of
+truth) and cross-checked against the JavaScript host in <code>reference/js/</code>.
+The panel firmware in <code>reference/panel/</code> is the authority on how pixel bytes
+inside a panel block are displayed. Source locations are given as <code>File:line</code> where useful.</p>
+<p>All multi-byte integers are <strong>little-endian</strong>. "u8/u16/u32/i16" are unsigned /
+signed integer widths. Opcodes are written in hex.</p>
+<h2 id="serial-settings">Serial settings<a class="headerlink" href="#serial-settings" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transport</td>
+<td>USB CDC-ACM (Teensy 4.1 native USB, <code>Serial</code>)</td>
+</tr>
+<tr>
+<td>Baud rate</td>
+<td>Ignored by USB CDC. Firmware calls <code>Serial.begin(115200)</code>; the host may open at any rate (use 115200 by convention).</td>
+</tr>
+<tr>
+<td>Data bits / parity / stop</td>
+<td>Irrelevant on USB CDC (8N1 by convention).</td>
+</tr>
+<tr>
+<td>Flow control</td>
+<td>None.</td>
+</tr>
+<tr>
+<td>USB VID/PID</td>
+<td><code>16C0:0483</code> (PJRC "Teensyduino Serial", the stock Teensy USB-serial IDs; confirmed with <code>lsusb</code> on a real controller). These identify <em>any</em> Teensy in serial mode, not specifically this controller.</td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td>The firmware also has a TCP path (port 62222) with identical framing, but <code>net.begin()</code>/<code>serviceTcp()</code> are commented out in <code>main.cpp</code>. Out of scope for this library.</td>
+</tr>
+</tbody>
+</table>
+<p>Only one process can hold the port at a time.</p>
+<h2 id="arena-variants">Arena variants<a class="headerlink" href="#arena-variants" title="Permanent link">&para;</a></h2>
+<p>One firmware image targets exactly one arena geometry, chosen at build time
+(<code>constants.h:47-59</code>). The host learns it from <code>GET_FIRMWARE_VERSION</code> (rows, cols).</p>
+<table>
+<thead>
+<tr>
+<th>Build flag</th>
+<th>Rows × cols</th>
+<th>Panels</th>
+<th>Stream frame GS2 / GS16 (bytes)</th>
+<th>Default refresh GS16 / GS2 (Hz)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ARENA_HW_2_10</code></td>
+<td>2 × 10</td>
+<td>20</td>
+<td>1064 / 4064</td>
+<td>300 / 1000</td>
+</tr>
+<tr>
+<td><code>ARENA_HW_10_10</code></td>
+<td>4 × 10</td>
+<td>40</td>
+<td>2124 / 8124</td>
+<td>400 / 1200</td>
+</tr>
+<tr>
+<td><code>ARENA_HW_12_18</code></td>
+<td>4 × 12</td>
+<td>48</td>
+<td>2548 / 9748</td>
+<td>400 / 1200</td>
+</tr>
+</tbody>
+</table>
+<p>Stream frame size = 4 + panels × block, with block = 53 B (GS2) or 203 B (GS16).</p>
+<h2 id="message-framing">Message framing<a class="headerlink" href="#message-framing" title="Permanent link">&para;</a></h2>
+<p>The link is a raw byte stream; there are no delimiters or checksums at the
+USB level. Framing is decided by the <strong>first byte</strong> of each host message
+(<code>SerialManager.cpp:parseIncoming</code>).</p>
+<h3 id="host-device">Host → device<a class="headerlink" href="#host-device" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>First byte</th>
+<th>Form</th>
+<th>Layout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0x00</code>–<code>0x31</code></td>
+<td><strong>Binary command</strong></td>
+<td><code>[len, cmd, params…]</code> — <code>len</code> = number of bytes after it (1 + params). Max <code>len</code> is <code>0x31</code>, i.e. at most 48 parameter bytes.</td>
+</tr>
+<tr>
+<td><code>0x32</code></td>
+<td><strong>Stream frame</strong></td>
+<td><code>[0x32, len_lo, len_hi, payload…]</code> — <code>len</code> = payload byte count (u16).</td>
+</tr>
+<tr>
+<td><code>0x83</code></td>
+<td><strong>Rename (opcode-first)</strong></td>
+<td><code>[0x83, idx u16, name_len u8, name…]</code> — <code>name_len</code> 1–63.</td>
+</tr>
+<tr>
+<td><code>0x85</code></td>
+<td><strong>Pattern upload (bulk)</strong></td>
+<td><code>[0x85, idx u16, size u64, data…]</code> — 11-byte header then <code>size</code> raw bytes.</td>
+</tr>
+<tr>
+<td><code>0xE0</code></td>
+<td><strong>Firmware upload (bulk)</strong></td>
+<td><code>[0xE0, size u64, data…]</code> — 9-byte header then <code>size</code> raw bytes.</td>
+</tr>
+<tr>
+<td>anything else</td>
+<td>—</td>
+<td>The device <strong>discards its whole receive buffer</strong> to resync. No reply.</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul>
+<li>The binary length byte doubles as the discriminator, which is why
+  commands that may exceed 48 parameter bytes use opcode-first framing.</li>
+<li>Only the low 32 bits of the u64 <code>size</code> fields are used (<code>SerialManager.cpp:105,133</code>).</li>
+<li><code>SET_PATTERN_FILENAME</code> (0x83) is accepted in <strong>both</strong> binary framing (when it
+  fits) and opcode-first framing. The library should always use opcode-first.</li>
+<li>A stream frame whose claimed length exceeds the receive buffer, or a 0x83
+  frame with <code>name_len</code> 0 or ≥ 64, makes the device silently discard its
+  receive buffer. <strong>No reply is sent</strong>; the host sees a timeout.</li>
+</ul>
+<h3 id="device-host-response-frame">Device → host: response frame<a class="headerlink" href="#device-host-response-frame" title="Permanent link">&para;</a></h3>
+<p>Every dispatched command produces exactly one response frame:</p>
+<div class="highlight"><pre><span></span><code>[len, status, echo_cmd, payload…]
+</code></pre></div>
+<ul>
+<li><code>len</code> = bytes after it (2 + payload). Response buffer is 200 bytes, so the
+  payload is at most 196 bytes and <code>len</code> ≤ 198. If a handler's payload would not
+  fit, the payload is <strong>silently dropped</strong> and only <code>[2, status, echo]</code> is sent
+  (<code>SerialManager.cpp:sendResponse</code>). No current handler hits this.</li>
+<li><code>status</code> = 0 on success, non-zero on failure (see <a href="#error-handling">Error handling</a>).</li>
+<li><code>echo_cmd</code> = the request opcode (0x32 for stream frames).</li>
+<li><code>payload</code> = either raw binary fields (GET-style commands) or an <strong>ASCII
+  message without a NUL terminator</strong> (<code>MessageSource.h:sendResponse(const char*)</code>
+  uses <code>strlen</code>). An empty message (<code>""</code>) produces no payload.</li>
+</ul>
+<p>There is no request id. Correlation is by <code>echo_cmd</code>, so the host must keep
+<strong>one request in flight at a time</strong> (see <a href="#concurrency">Concurrency</a>).</p>
+<h3 id="device-host-bulk-data">Device → host: bulk data<a class="headerlink" href="#device-host-bulk-data" title="Permanent link">&para;</a></h3>
+<p><code>GET_PATTERN_FILE</code> (0x84) and <code>GET_SD_ARCHIVE</code> (0x8A) send a normal response
+frame whose payload is a u64 <code>size</code> (status 0), <strong>followed immediately by
+<code>size</code> raw bytes</strong> with no framing. If the transfer aborts (host stalls &gt; 2 s,
+SD read error, 60 s idle) the device just stops sending; there is no trailer
+or error frame. The host detects failure by receiving fewer than <code>size</code> bytes.</p>
+<h3 id="device-host-diagnostic-text-debug_serial-builds-only">Device → host: diagnostic text (DEBUG_SERIAL builds only)<a class="headerlink" href="#device-host-diagnostic-text-debug_serial-builds-only" title="Permanent link">&para;</a></h3>
+<p>Debug builds can interleave text lines on the same pipe. Each line starts with
+the sentinel byte <strong><code>0xFF</code></strong> and ends with <code>\n</code> (<code>constants.h:diag_line_sentinel</code>,
+<code>main.cpp:SentinelPrint</code>). <code>0xFF</code> can never be a response length byte (max 198),
+so the host can demultiplex: a frame that begins with <code>0xFF</code> is a diagnostic
+line to be read up to <code>\n</code>. Diagnostics are off at boot and controlled by
+<code>SET_DIAG_OUTPUT</code> (0xC3); boot-time banner lines are printed unconditionally
+in debug builds. Release builds never emit them. The flag bit
+<code>GET_FIRMWARE_VERSION.flags bit1</code> tells the host whether it is a debug build.</p>
+<h2 id="device-state">Device state<a class="headerlink" href="#device-state" title="Permanent link">&para;</a></h2>
+<p>The controller is always in one of these states (<code>CommandProcessor.h:ArenaState</code>;
+reported as <code>GET_HEALTH.state</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>State</th>
+<th>Entered by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>ALL_OFF</code></td>
+<td>boot, 0x00, 0x30, trial duration expiry, end of error glyph, bad stream size</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>ALL_ON</code></td>
+<td>0xFF</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>STREAMING_FRAME</code></td>
+<td>0x32</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>OPEN_LOOP</code> (mode 2)</td>
+<td>0x08 mode 2</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>SHOW_FRAME</code> (mode 3)</td>
+<td>0x08 mode 3, 0x03, 0x70</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>CLOSED_LOOP</code> (mode 4)</td>
+<td>0x08 mode 4</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>PSRAM_PLAY</code></td>
+<td>0x3A, 0x3B</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>ERROR_DISPLAY</code></td>
+<td>many errors (see below); auto-returns to <code>ALL_OFF</code> after 750 ms</td>
+</tr>
+</tbody>
+</table>
+<p>Entering <code>ALL_OFF</code> sends a dark frame three times so the panels actually blank
+(panels hold their last frame otherwise).</p>
+<p>Several commands are refused unless the state is <code>ALL_OFF</code> (status 10,
+<code>CE_DISPLAY_ACTIVE</code>), and several are refused while an SD transfer
+(0x84 / 0x85 / 0x8A) is running (status 1, "SD transfer in progress").</p>
+<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
+<p>Request bytes are shown for binary framing (<code>[len, cmd, …]</code>). "Reply" lists the
+success payload; on failure the payload is an ASCII message unless noted.</p>
+<h3 id="display-control">Display control<a class="headerlink" href="#display-control" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Name</th>
+<th>Request</th>
+<th>Reply payload</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>00</td>
+<td>ALL_OFF</td>
+<td><code>01 00</code></td>
+<td>"All-Off Received"</td>
+<td>Always accepted. Clears per-trial duty.</td>
+</tr>
+<tr>
+<td>FF</td>
+<td>ALL_ON</td>
+<td><code>01 FF</code></td>
+<td>"All-On Received"</td>
+<td>Refused during SD transfer. GS16, all pixels max.</td>
+</tr>
+<tr>
+<td>30</td>
+<td>STOP_DISPLAY</td>
+<td><code>01 30</code></td>
+<td>"Display has been stopped"</td>
+<td>Same effect as ALL_OFF.</td>
+</tr>
+<tr>
+<td>08</td>
+<td>TRIAL_PARAMS</td>
+<td><code>0C 08 mode pat:u16 rate:i16 init:u16 gain:i16 dur:u16</code> (+ <code>duty:u8</code> → <code>0D</code>)</td>
+<td>empty</td>
+<td>Start mode 2/3/4 with 1-based SD pattern. <code>rate</code> Hz (mode 2; negative = reverse). <code>init</code> 0-based start frame (taken modulo frame count). <code>gain</code> = 10× fps/V (mode 4). <code>dur</code> in 10 ms ticks, 0 = run until stopped. <code>duty</code> 0 = pattern's stored duty, 1–255 = override for this trial. Errors: &lt; 11 params, mode ∉ {2,3,4}, or pattern load failure → <strong>error glyph</strong> + status 1. Refused during SD transfer.</td>
+</tr>
+<tr>
+<td>03</td>
+<td>SET_PATTERN_ID</td>
+<td><code>03 03 id:u16</code></td>
+<td><code>id:u16</code> (echo)</td>
+<td>Open pattern in SHOW_FRAME at frame 0, no auto-advance, stored duty. Load failure → error glyph + status 1.</td>
+</tr>
+<tr>
+<td>70</td>
+<td>SET_FRAME_POSITION</td>
+<td><code>03 70 index:u16</code></td>
+<td>empty</td>
+<td>Show 0-based frame of the open pattern; switches state to SHOW_FRAME. Errors (no pattern open, index ≥ frame count, SD read failure) → <strong>error glyph</strong> + status 1.</td>
+</tr>
+<tr>
+<td>72</td>
+<td>GET_FRAME_POSITION</td>
+<td><code>01 72</code></td>
+<td><code>index:u16, frame_count:u16</code></td>
+<td>0/0 when no pattern is open.</td>
+</tr>
+<tr>
+<td>32</td>
+<td>STREAM_FRAME</td>
+<td><code>32 len:u16 payload</code></td>
+<td>empty (echo 0x32)</td>
+<td>Payload = 4-byte prefix (<code>'F','R', frame_index:u16</code>) + one block per panel, row-major. Size must be exactly the GS2 or GS16 stream size for this arena; otherwise device goes to ALL_OFF and replies status 1 "Bad stream-frame size". Enters STREAMING_FRAME.</td>
+</tr>
+<tr>
+<td>3A</td>
+<td>DISPLAY_PSRAM_INDEX</td>
+<td><code>03 3A index:u16</code></td>
+<td>empty</td>
+<td>Panels show their locally stored PSRAM frame <code>index</code>. Too short → error glyph.</td>
+</tr>
+<tr>
+<td>3B</td>
+<td>PSRAM_PLAY</td>
+<td><code>07 3B start:u16 count:u16 fps:u16</code></td>
+<td>empty</td>
+<td>Auto-advance PSRAM frames <code>[start, start+count)</code> at <code>fps</code>. <code>count</code> 0 is treated as 1.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>SET_REFRESH_RATE</td>
+<td><code>03 16 hz:u16</code></td>
+<td>empty</td>
+<td>Panel re-transmit rate. <code>hz</code> 0 is accepted but ignored. Once set, it overrides the per-grayscale defaults until reboot.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>GET_REFRESH_RATE</td>
+<td><code>01 17</code></td>
+<td><code>hz:u16</code></td>
+<td></td>
+</tr>
+<tr>
+<td>1B</td>
+<td>SET_PANEL_DISPLAY_MODE</td>
+<td><code>02 1B mode</code></td>
+<td><code>mode:u8</code> (echo)</td>
+<td>0 oneshot, 1 persist (default), 2 triggered, 3 gated. Sticky; applied to the current frame immediately.</td>
+</tr>
+<tr>
+<td>1C</td>
+<td>GET_PANEL_DISPLAY_MODE</td>
+<td><code>01 1C</code></td>
+<td><code>mode:u8</code></td>
+<td></td>
+</tr>
+<tr>
+<td>33</td>
+<td>GET_FRAMES_SENT</td>
+<td><code>01 33</code></td>
+<td><code>count:u32</code></td>
+<td>Frames pushed to panels since boot or reset.</td>
+</tr>
+<tr>
+<td>34</td>
+<td>RESET_FRAMES_SENT</td>
+<td><code>01 34</code></td>
+<td>empty</td>
+<td></td>
+</tr>
+<tr>
+<td>C5</td>
+<td>SET_SPI_CLOCK</td>
+<td><code>03 C5 mhz:u16</code></td>
+<td><code>applied_mhz:u16</code></td>
+<td>Firmware clamps to 1–30 MHz and echoes the applied value.</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>GET_SPI_CLOCK</td>
+<td><code>01 C6</code></td>
+<td><code>mhz:u16</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sd-card-pattern-library">SD card / pattern library<a class="headerlink" href="#sd-card-pattern-library" title="Permanent link">&para;</a></h3>
+<p>Patterns are <code>/patterns/*.pat</code>, sorted alphabetically, addressed by a
+<strong>1-based index</strong> (max 256 listed). Index 0 means the staging file
+<code>/patterns/pattern.temp</code> where noted. Renames and deletes <strong>re-sort / compact the
+index space</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Name</th>
+<th>Request</th>
+<th>Reply payload</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>80</td>
+<td>GET_FILE_COUNT</td>
+<td><code>01 80</code></td>
+<td><code>count:u16</code></td>
+<td></td>
+</tr>
+<tr>
+<td>82</td>
+<td>GET_PATTERN_FILENAME</td>
+<td><code>03 82 idx:u16</code></td>
+<td><code>name_len:u8, name</code></td>
+<td>Status 1 "Index out of range".</td>
+</tr>
+<tr>
+<td>88</td>
+<td>GET_PATTERN_INFO</td>
+<td><code>03 88 idx:u16</code></td>
+<td><code>frame_count:u16, gs:u8, rows:u8, cols:u8, arena_id:u8, observer_id:u8, file_size:u32, duty_cycle:u8</code> (12 B)</td>
+<td><code>gs</code> 1 = GS2, 2 = GS16. <code>duty_cycle</code> = frame 0 / panel 0. Allowed while displaying. Failure status = CE code.</td>
+</tr>
+<tr>
+<td>83</td>
+<td>SET_PATTERN_FILENAME</td>
+<td><code>83 idx:u16 name_len:u8 name</code></td>
+<td><code>new_idx:u16</code></td>
+<td>Rename; idx 0 promotes <code>pattern.temp</code>. <code>name_len</code> 1–63. Refused during SD transfer. Failure status = CE code.</td>
+</tr>
+<tr>
+<td>84</td>
+<td>GET_PATTERN_FILE</td>
+<td><code>03 84 idx:u16</code></td>
+<td><code>size:u64</code>, then <code>size</code> raw bytes</td>
+<td>Requires ALL_OFF. See <a href="#device-host-bulk-data">bulk data</a>.</td>
+</tr>
+<tr>
+<td>85</td>
+<td>SET_PATTERN_FILE</td>
+<td><code>85 idx:u16 size:u64 data</code></td>
+<td>empty, sent <strong>after</strong> all data is received</td>
+<td>idx 0 writes <code>pattern.temp</code>, idx ≥ 1 overwrites that pattern. Requires ALL_OFF. <code>size</code> 0 → immediate status 1. On any other rejection the device still <strong>reads and discards all <code>size</code> bytes</strong> before replying. Idle timeout 30 s.</td>
+</tr>
+<tr>
+<td>86</td>
+<td>DELETE_PATTERN_FILE</td>
+<td><code>03 86 idx:u16</code></td>
+<td>empty</td>
+<td>idx 0 deletes <code>pattern.temp</code>. Failure status = CE code.</td>
+</tr>
+<tr>
+<td>8F</td>
+<td>PURGE_MEMORY</td>
+<td><code>01 8F</code></td>
+<td>empty</td>
+<td><strong>Formats the whole SD card</strong> (patterns, panel firmware, manifests). Requires ALL_OFF and no transfer. Slow (scales with card size).</td>
+</tr>
+<tr>
+<td>8A</td>
+<td>GET_SD_ARCHIVE</td>
+<td><code>01 8A</code></td>
+<td><code>size:u64</code>, then a ZIP (store mode)</td>
+<td>Requires ALL_OFF. Contains <code>MANIFEST.bin</code>, <code>MANIFEST.txt</code> and <code>patterns/*.pat</code>.</td>
+</tr>
+<tr>
+<td>CD</td>
+<td>GET_SD_INFO</td>
+<td><code>01 CD</code></td>
+<td>30 B: <code>ver, flags, card_type, fat_type, sectors:u32, bytes_per_cluster:u32, cid[16], sd_status_maint, sd_diag</code></td>
+<td><strong>Status 1 still carries the payload</strong> (no card mounted).</td>
+</tr>
+<tr>
+<td>CE</td>
+<td>SET_SD_DIAG</td>
+<td><code>02 CE flags</code></td>
+<td><code>flags:u8</code></td>
+<td>Bench switches: bit0 legacy seek, bit1 no same-index skip. Bits 2–7 must be 0.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="analog-digital-io">Analog / digital I/O<a class="headerlink" href="#analog-digital-io" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Name</th>
+<th>Request</th>
+<th>Reply payload</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A0</td>
+<td>SET_AO_VOLTAGE</td>
+<td><code>03 A0 mv:u16</code></td>
+<td><code>mv:u16</code></td>
+<td>0–5000 mV on the analog-out BNC. Stops LUT playback. Refused in AO mode 1.</td>
+</tr>
+<tr>
+<td>A1</td>
+<td>GET_AO_VOLTAGE</td>
+<td><code>01 A1</code></td>
+<td><code>mv:u16</code></td>
+<td><strong>Read back from the DAC</strong> (12-bit quantized), not the commanded value.</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>SET_AO_LUT</td>
+<td><code>len A2 mode step_hz:u16 count:u16 mv:u16×count</code></td>
+<td><code>count:u16</code></td>
+<td>mode 0 = frame-locked, 1 = time-based at <code>step_hz</code> (≤ 1000). Each mv 0–5000. <strong><code>count</code> ≤ 21</strong> (binary framing limit, see <a href="#quirks">Quirks</a>). Refused in AO mode 1.</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>SET_AO_MODE</td>
+<td><code>02 A3 mode</code></td>
+<td>empty</td>
+<td>0 programmable, 1 frame_number (DAC tracks frame index, 0–5 V across the pattern).</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>GET_ANALOG_IN</td>
+<td><code>01 A4</code></td>
+<td><code>ain1_mv:i16, ain2_mv:i16</code></td>
+<td>±10 V inputs, 10-bit ADC, uncalibrated.</td>
+</tr>
+<tr>
+<td>AA</td>
+<td>SET_DIGITAL_OUT</td>
+<td><code>03 AA channel state</code></td>
+<td>empty</td>
+<td>channel 1/2; state 0/non-zero. A port in role <code>off</code> is auto-promoted to <code>out_programmable</code>; a port in <code>in_trigger</code> or <code>out_debug_framescan</code> is refused (status 1).</td>
+</tr>
+<tr>
+<td>AB</td>
+<td>GET_DIGITAL_OUT</td>
+<td><code>01 AB</code></td>
+<td><code>level1:u8, level2:u8</code></td>
+<td>Live pin reads.</td>
+</tr>
+<tr>
+<td>AC</td>
+<td>SET_DIO_ROLE</td>
+<td><code>03 AC port role</code></td>
+<td>empty</td>
+<td>port 1/2; role 0 off, 1 in_trigger, 2 out_programmable, 3 out_debug_framescan. Boot defaults: port 1 = out_programmable (LOW), port 2 = in_trigger.</td>
+</tr>
+<tr>
+<td>AD</td>
+<td>GET_DIO_ROLE</td>
+<td><code>01 AD</code></td>
+<td><code>role1, level1, role2, level2</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="identity-health-and-diagnostics">Identity, health and diagnostics<a class="headerlink" href="#identity-health-and-diagnostics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Name</th>
+<th>Request</th>
+<th>Reply payload</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2</td>
+<td>GET_CONTROLLER_INFO</td>
+<td><code>01 C2</code></td>
+<td><code>version:u8, capability:u8, mac[6]</code></td>
+<td><code>version</code> = 1. This firmware reports capability <code>0xA3</code>. See <a href="#capability-and-feature-flags">capability bits</a>.</td>
+</tr>
+<tr>
+<td>CB</td>
+<td>GET_FIRMWARE_VERSION</td>
+<td><code>01 CB</code></td>
+<td>46 B: <code>ver, rows, cols, flags, sha[8], date[10], branch[24]</code></td>
+<td>ASCII fields right-padded with spaces. Gated by capability bit 7.</td>
+</tr>
+<tr>
+<td>CA</td>
+<td>GET_HEALTH</td>
+<td><code>01 CA</code></td>
+<td>114 B (<code>ver</code> = 5)</td>
+<td>Cumulative counters, previous-boot breadcrumb, watchdog state. Layout in <code>CommandProcessor.cpp:1078-1128</code>; offsets never move between versions. Gated by capability bit 7.</td>
+</tr>
+<tr>
+<td>CC</td>
+<td>GET_CRASHREPORT</td>
+<td><code>01 CC</code></td>
+<td>128 B raw</td>
+<td>PJRC <code>arm_fault_info_struct</code> (44 B) + PJRC breadcrumbs. Not cleared by reading. Gated by firmware flags bit 3.</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>SET_TELEMETRY</td>
+<td><code>02 A8 flags</code> or <code>04 A8 flags rate:u16</code></td>
+<td>empty</td>
+<td>bit0 record events (on at boot); bit7 synthetic producer at <code>rate</code>/s; bit4 = watchdog bits present, then bit6 watchdog off, bit5 starve watchdog (<strong>resets the controller after 2 s</strong>). Gated by firmware flags bit 2.</td>
+</tr>
+<tr>
+<td>A9</td>
+<td>GET_TELEMETRY_BLOCK</td>
+<td><code>08 A9 ack_seq:u32 max_bytes:u16 flags</code></td>
+<td>18-byte header + whole records</td>
+<td>Frees records with <code>seq ≤ ack_seq</code> (0xFFFFFFFF = no ack), then returns up to min(max_bytes, 178) bytes of records <strong>without</strong> freeing them. Record format below.</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>GET_ETHERNET_IP_ADDRESS</td>
+<td><code>01 C1</code></td>
+<td>ASCII dotted quad</td>
+<td>Ethernet is not started in this build, so the value is not meaningful.</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>SET_DIAG_OUTPUT</td>
+<td><code>02 C3 on</code> (or <code>01 C3</code> = on)</td>
+<td>"diag on" / "diag off"</td>
+<td>Only has an effect on DEBUG_SERIAL builds.</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>GET_DIAG_OUTPUT</td>
+<td><code>01 C4</code></td>
+<td><code>on:u8</code></td>
+<td></td>
+</tr>
+<tr>
+<td>01</td>
+<td>SYSTEM_RESET</td>
+<td><code>01 01</code></td>
+<td>"rebooting"</td>
+<td>Replies, then resets ~10 ms later. USB drops and re-enumerates.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="panel-firmware-in-system-programming">Panel firmware (in-system programming)<a class="headerlink" href="#panel-firmware-in-system-programming" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Op</th>
+<th>Name</th>
+<th>Request</th>
+<th>Reply payload</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E0</td>
+<td>SET_FIRMWARE_FILE</td>
+<td><code>E0 size:u64 data</code></td>
+<td><code>crc32:u32</code> (CRC-32/ISO-HDLC of stored bytes)</td>
+<td>Writes <code>/firmware/panel.bin</code>. Requires ALL_OFF and no transfer. Blocking; idle timeout 30 s.</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>GET_FIRMWARE_INFO</td>
+<td><code>01 E3</code></td>
+<td>32 B footer: <code>magic[8], version[16], crc32:u32, size:u32</code></td>
+<td>Status 1 if no image.</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>G6_PROGRAM_PANEL</td>
+<td><code>02 C8 panel_number</code></td>
+<td>ASCII result message</td>
+<td>1-based panel number. Requires ALL_OFF. Blocks for several seconds.</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>G6_VERIFY_PANEL</td>
+<td><code>02 C9 panel_number</code></td>
+<td>ASCII result message</td>
+<td>Status 0 = CRC match. Requires ALL_OFF.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reserved-rejected-opcodes">Reserved / rejected opcodes<a class="headerlink" href="#reserved-rejected-opcodes" title="Permanent link">&para;</a></h3>
+<p><code>06</code> SWITCH_GRAYSCALE replies status 1 with an explanation (dropped for G6).
+<code>C0</code>, <code>C7</code>, <code>71</code>, <code>73</code> are defined in <code>commands.h</code> but not implemented. They,
+and <strong>every other unknown opcode</strong>, are handled as an unknown command:
+<strong>the arena shows a "CE 01" error glyph</strong> for 750 ms (which stops any running
+display) and the reply is status 1 "Unknown command". Hosts must therefore
+<strong>not probe</strong> for optional commands; they must gate on the capability/feature
+flags below.</p>
+<h2 id="capability-and-feature-flags">Capability and feature flags<a class="headerlink" href="#capability-and-feature-flags" title="Permanent link">&para;</a></h2>
+<p><code>GET_CONTROLLER_INFO.capability</code> (<code>constants.h:187</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>g6_mode</td>
+<td>Always 1 on G6</td>
+</tr>
+<tr>
+<td>1</td>
+<td>v2_local_storage</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>mode_1_tsi</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>v3_triggered</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>v3_gated</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>io_ext</td>
+<td>0xA3, 0xA4, 0xAC, 0xAD present</td>
+</tr>
+<tr>
+<td>6</td>
+<td>ai_cal</td>
+<td>(claimed by a different firmware branch; not set here)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>health</td>
+<td>0xCA and 0xCB present</td>
+</tr>
+</tbody>
+</table>
+<p><code>GET_FIRMWARE_VERSION.flags</code> (<code>Version.h</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Meaning</th>
+<th>Gates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Dirty working tree at build</td>
+<td>—</td>
+</tr>
+<tr>
+<td>1</td>
+<td>DEBUG_SERIAL build (diagnostic text may appear)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Telemetry ring present</td>
+<td>0xA8, 0xA9</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Crash report + health v2 present</td>
+<td>0xCC</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Free-running refresh timer</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>SD fast path</td>
+<td>0xCD</td>
+</tr>
+<tr>
+<td>6</td>
+<td>SD diagnostics</td>
+<td>0xCE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pattern-file-format-pat">Pattern file format (.pat)<a class="headerlink" href="#pattern-file-format-pat" title="Permanent link">&para;</a></h2>
+<p>Patterns on the SD card (and uploaded with 0x85) use the G6 v2 format. The
+layout below is what the firmware validates (<code>SdManager.cpp:validateHeader</code>,
+<code>readFrame</code>) and what <code>reference/js/pat-encoder.js</code> / <code>pat-parser.js</code> write and
+read. The firmware passes panel blocks to the panels unchanged, apart from the
+display-mode bits and an optional per-trial duty override.</p>
+<h3 id="header-18-bytes">Header (18 bytes)<a class="headerlink" href="#header-18-bytes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–3</td>
+<td>Magic <code>"G6PT"</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>bits 7–4: format version (<strong>must be 2</strong>); bits 3–0: arena_id bits 5–2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>bits 7–6: arena_id bits 1–0; bits 5–0: observer_id</td>
+</tr>
+<tr>
+<td>6–7</td>
+<td><code>frame_count:u16</code> (must be &gt; 0)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>panel rows</td>
+</tr>
+<tr>
+<td>9</td>
+<td>panel cols</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>gs</code>: 1 = GS2 (on/off), 2 = GS16 (16 levels)</td>
+</tr>
+<tr>
+<td>11–16</td>
+<td>panel mask, 48 bits, bit <em>i</em> = panel <em>i</em> (byte 11 bit 0 = panel 0)</td>
+</tr>
+<tr>
+<td>17</td>
+<td>CRC-8/AUTOSAR over bytes 0–16 (poly 0x2F, init 0xFF, xorout 0xFF, not reflected; check "123456789" → 0xDF)</td>
+</tr>
+</tbody>
+</table>
+<p>The firmware rejects a file unless rows × cols equals this build's arena
+(<code>CE_ARENA_MISMATCH</code>), the mask has at most rows × cols bits set, and the
+magic, version, CRC-8, frame count and <code>gs</code> are valid (<code>CE_HEADER_CRC</code>).
+arena_id and observer_id are host metadata only. The JS parser also reads an
+older 17-byte v1 header; the firmware does not accept v1.</p>
+<h3 id="frames">Frames<a class="headerlink" href="#frames" title="Permanent link">&para;</a></h3>
+<p><code>frame_count</code> frames follow the header back to back. Each frame is:</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Size</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix</td>
+<td>4</td>
+<td><code>'F','R', frame_index:u16</code></td>
+</tr>
+<tr>
+<td>Panel blocks</td>
+<td>panels × 53 (GS2) or × 203 (GS16)</td>
+<td>One block per panel, row-major, panel row 0 = <strong>bottom</strong> of the arena</td>
+</tr>
+<tr>
+<td>Trailer</td>
+<td>2</td>
+<td>CRC-16/CCITT-FALSE (poly 0x1021, init 0xFFFF, no xorout; check → 0x29B1) over prefix + blocks, little-endian</td>
+</tr>
+</tbody>
+</table>
+<p>The firmware checks the <code>"FR"</code> magic and the CRC-16 of every frame it
+displays (<code>CE_FRAME_CRC</code>). It does not check <code>frame_index</code>.</p>
+<p>A <strong>stream frame</strong> payload (0x32) is exactly one frame without its trailer.</p>
+<h3 id="panel-block">Panel block<a class="headerlink" href="#panel-block" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>GS2 (53 B)</th>
+<th>GS16 (203 B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>header: bits 6–0 = protocol version 1, bit 7 = even parity</td>
+<td>same</td>
+</tr>
+<tr>
+<td>1</td>
+<td>display opcode <code>0x10</code> (written as oneshot)</td>
+<td><code>0x30</code></td>
+</tr>
+<tr>
+<td>2…</td>
+<td>50 bytes, 1 bit/pixel, MSB first</td>
+<td>200 bytes, 4 bits/pixel, even pixel in high nibble</td>
+</tr>
+<tr>
+<td>last</td>
+<td><code>duty_cycle</code> (brightness 0–255; 0 = off)</td>
+<td>same</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Parity:</strong> bit 7 of byte 0 is chosen so the number of 1 bits in
+  {byte 0 bits 6–0, all following bytes} is even (<code>G6PanelProtocol.h:stamp_header_parity</code>).</li>
+<li><strong>Opcode:</strong> the low 2 bits (display mode) are rewritten by the firmware at
+  display time from SET_PANEL_DISPLAY_MODE, so the file value does not matter.</li>
+<li><strong>Duty:</strong> the JS encoder writes 128 by default. A trial's <code>duty</code> parameter
+  (0x08) overrides it at display time.</li>
+<li><strong>Pixel order:</strong> row-major, <strong>starting at the top row of the panel</strong>:
+  <code>pixel = row_from_top × 20 + col</code>, col 0 = left. This is what the panel
+  firmware does (<code>reference/panel/message.cpp:to_pattern_gray_2/16</code> unpacks
+  pixel <em>n</em> into matrix row <em>n</em> / 20; <code>isp_logic.h:74</code> states "Row 0 = top"
+  for the matrix, and its built-in ERR and smiley glyphs read upright with
+  that convention). The <code>.pat</code> encoder in <code>pat-encoder.js</code> follows it too.
+  <strong>Confirmed on hardware:</strong> the controller's error glyph, which is packed
+  bottom row first, shows on the panels upside down with the digits above "CE".
+  Across the arena, panel blocks are in row-major order starting from the
+  <strong>bottom</strong> row of panels, columns left to right, so block <em>k</em> is panel
+  number <em>k</em> + 1 (as used by PROGRAM_PANEL / VERIFY_PANEL). A host image with
+  row 0 at the bottom must therefore flip rows <em>within</em> each panel when
+  packing. <strong>Confirmed on hardware</strong> (2×10 build, panels 4 and 5 fitted,
+  2026-11-04): the image's bottom panel row, column 3 lit panel 4; the top
+  panel row lit nothing; the top-left 6×6 pixels of each panel lit the
+  top-left corner of panels 4 and 5; panel 4 is left of panel 5.</li>
+</ul>
+<h2 id="telemetry-records">Telemetry records<a class="headerlink" href="#telemetry-records" title="Permanent link">&para;</a></h2>
+<p><code>GET_TELEMETRY_BLOCK</code> reply header (18 B): <code>t_now_us:u32, first_seq:u32,
+n_records:u16, dropped:u32, more:u8, flags:u8, boot_count:u16</code>. Header flags:
+bit0 events enabled, bit1 ring survived a reboot, bit2 ring disabled (heap
+collision), bit3 synthetic producer on.</p>
+<p>Records follow back to back (<code>Telemetry.h</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>len:u8</code> (whole record)</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>type:u8</code> — 1 CMD, 2 FRAME, 3 STATE (0 PAD is never returned)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>seq:u32</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>t_us:u32</code> (raw <code>micros()</code>; wraps every ~71.6 min)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>type-specific payload</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>CMD</strong> (13–21 B): <code>cmd:u8, status:u8, plen:u8, request_bytes[plen ≤ 8]</code>.</li>
+<li><strong>FRAME</strong> (26 B): <code>idx:u16, pattern:u16, sd_load_us:u32, spi_us:u16,
+  req_age_us:u32, superseded:u8, flags:u8</code>.</li>
+<li><strong>STATE</strong> (14 B): <code>kind:u8, code:u8, arg:u16</code>; kinds 1–14 as listed in
+  <code>Telemetry.h:118-145</code>.</li>
+</ul>
+<p>The intended drain loop: send <code>ack_seq = 0xFFFFFFFF</code> first, then
+<code>ack_seq = first_seq + n_records - 1</code> of the last block received, repeating
+while <code>more</code> is 1. A lost reply is recovered by resending the same ack.</p>
+<h2 id="asynchronous-messages">Asynchronous messages<a class="headerlink" href="#asynchronous-messages" title="Permanent link">&para;</a></h2>
+<p><strong>None.</strong> The firmware never sends unsolicited frames. Every frame is a reply
+to a command, except:</p>
+<ul>
+<li>raw bulk bytes after a 0x84 / 0x8A header (solicited), and</li>
+<li><code>0xFF</code>-prefixed diagnostic text lines on DEBUG_SERIAL builds.</li>
+</ul>
+<p>Anything "streamed" from the device (frame position, analog inputs, health,
+telemetry events) must be <strong>polled</strong> by the host. The telemetry ring is the
+designed mechanism for a complete event log (commands, frame changes, state
+changes) with no gaps.</p>
+<h2 id="error-handling">Error handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<h3 id="status-codes">Status codes<a class="headerlink" href="#status-codes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Name</th>
+<th>Typical source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>OK</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>generic error / <code>CE_UNKNOWN_CMD</code></td>
+<td>Most validation failures (message in payload); unknown opcode</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>CE_BAD_PAYLOAD_LEN</code></td>
+<td>(used as glyph code; replies use 1)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>CE_BAD_PARAM</code></td>
+<td>Index out of range (SD manager)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>CE_SD_NOT_PRESENT</code></td>
+<td>No SD card</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>CE_SD_FILE_ERROR</code></td>
+<td>File missing / unreadable / rename or delete failed</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>CE_HEADER_CRC</code></td>
+<td>Bad pattern header (magic, version, CRC-8)</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>CE_FRAME_CRC</code></td>
+<td>Bad frame CRC-16</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>CE_ARENA_MISMATCH</code></td>
+<td>Pattern geometry ≠ this arena</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>CE_MANIFEST_WRITE_ERROR</code></td>
+<td>Manifest update failed</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>CE_DISPLAY_ACTIVE</code></td>
+<td>Command needs ALL_OFF</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>CE_SD_FORMAT_ERROR</code></td>
+<td>Purge (format) failed</td>
+</tr>
+</tbody>
+</table>
+<p>Codes 2–11 appear as reply statuses only from the SD handlers (0x83, 0x86,
+0x88, 0x8F) and from <code>CE_DISPLAY_ACTIVE</code> guards. Display-start failures
+(0x08, 0x03, 0x70) always reply status 1, but show the precise CE code as a
+glyph on the arena. The ASCII payload is the only way to tell status-1
+errors apart.</p>
+<h3 id="error-glyph-side-effect">Error glyph side effect<a class="headerlink" href="#error-glyph-side-effect" title="Permanent link">&para;</a></h3>
+<p>These failures put the arena into <code>ERROR_DISPLAY</code> ("CE NN" on every panel)
+for 750 ms, then <code>ALL_OFF</code>, <strong>stopping whatever was being displayed</strong>:
+unknown opcodes; TRIAL_PARAMS too short / bad mode / load failure;
+SET_PATTERN_ID load failure; SET_FRAME_POSITION with no pattern, index out of
+range, or read failure; DISPLAY_PSRAM_INDEX / PSRAM_PLAY too short. The
+library should validate arguments locally so that these are not triggered by
+host bugs.</p>
+<h3 id="malformed-input">Malformed input<a class="headerlink" href="#malformed-input" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Device behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unknown first byte</td>
+<td>Receive buffer discarded, no reply → host timeout</td>
+</tr>
+<tr>
+<td>Stream frame too large for buffer</td>
+<td>Receive buffer discarded, no reply</td>
+</tr>
+<tr>
+<td>Stream frame of wrong (but bufferable) size</td>
+<td>ALL_OFF, status 1</td>
+</tr>
+<tr>
+<td>0x83 with <code>name_len</code> 0 or ≥ 64 (opcode-first)</td>
+<td>Receive buffer discarded, no reply</td>
+</tr>
+<tr>
+<td>Binary command with wrong parameter count</td>
+<td>Status 1 with "Expected […]" message (per handler)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="recovery">Recovery<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h3>
+<p>After a timeout, stale bytes may still arrive. The host should discard its
+receive buffer (the JS host does this) before sending the next request.</p>
+<h2 id="timing">Timing<a class="headerlink" href="#timing" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal command reply</td>
+<td>well under 1 ms of device time; JS uses a 500 ms timeout</td>
+<td><code>arena-link.js:70</code></td>
+</tr>
+<tr>
+<td>PURGE_MEMORY (0x8F)</td>
+<td>tens of seconds to minutes (SD format); JS uses 120 s</td>
+<td><code>arena-wire-g6.js:583</code></td>
+</tr>
+<tr>
+<td>G6_PROGRAM_PANEL / VERIFY (0xC8/0xC9)</td>
+<td>several seconds</td>
+<td><code>CommandProcessor.cpp:2729</code></td>
+</tr>
+<tr>
+<td>GET_SD_ARCHIVE (0x8A) header</td>
+<td>proportional to file count (stat of up to 258 files)</td>
+<td></td>
+</tr>
+<tr>
+<td>Bulk download (0x84/0x8A)</td>
+<td>device aborts after 2 s with no host read progress, or 60 s idle</td>
+<td><code>SerialManager.cpp:sendRaw</code></td>
+</tr>
+<tr>
+<td>Bulk upload (0x85)</td>
+<td>30 s idle → abort and drain (≤ 5 s more), then status 1</td>
+<td><code>CommandProcessor.h:259</code></td>
+</tr>
+<tr>
+<td>Rejected bulk upload</td>
+<td>device drains: 5 s idle / 15 s absolute</td>
+<td><code>CommandProcessor.cpp:drainBulkData</code></td>
+</tr>
+<tr>
+<td>Firmware upload (0xE0)</td>
+<td>30 s idle</td>
+<td></td>
+</tr>
+<tr>
+<td>SYSTEM_RESET</td>
+<td>reply then reset after ~10 ms; USB re-enumerates (~1–3 s)</td>
+<td></td>
+</tr>
+<tr>
+<td>Boot</td>
+<td>panels blanked at boot and again 3.5 s after reset</td>
+<td><code>constants.h:panel_late_boot_blank_ms</code></td>
+</tr>
+<tr>
+<td>Error glyph hold</td>
+<td>750 ms, then ALL_OFF</td>
+<td><code>constants.h:error_display_hold_ms</code></td>
+</tr>
+<tr>
+<td>Trial duration tick</td>
+<td>10 ms</td>
+<td><code>constants.h:duration_tick_ms</code></td>
+</tr>
+<tr>
+<td>Mode 4 AIN sampling</td>
+<td>500 Hz</td>
+<td></td>
+</tr>
+<tr>
+<td>Hardware watchdog</td>
+<td>2 s (30 s during long ops) — a wedged controller resets itself</td>
+<td><code>Health.h</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="refresh-rate-and-measured-performance">Refresh rate and measured performance<a class="headerlink" href="#refresh-rate-and-measured-performance" title="Permanent link">&para;</a></h3>
+<p>The <strong>refresh rate</strong> is how often the controller re-sends the current frame
+to all panels over SPI (a timer in the controller firmware). A new frame
+reaches the panels at the next refresh tick. Defaults (<code>constants.h</code>): 2x10
+builds 300 Hz for GS16 content and 1000 Hz for GS2; other builds 400 / 1200 Hz.
+The controller switches between the GS2 and GS16 defaults automatically,
+until the host sets a rate with SET_REFRESH_RATE: that rate then applies to
+all content until the controller reboots. Separately, each panel scans its
+LEDs at a fixed 1 kHz (<code>reference/panel/display.cpp</code>), which is not
+adjustable from the host; frame rates above 1 kHz bring no visible benefit.</p>
+<p>Measured on a 2x10 controller (firmware <code>12bba7e9</code>, debug build, 25 MHz SPI,
+Linux host in a VM, 2026-11-05). No panel errors were seen at any rate.</p>
+<table>
+<thead>
+<tr>
+<th>Refresh (set)</th>
+<th>GS16 transfers achieved</th>
+<th>GS2 transfers achieved</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>300-1250 Hz</td>
+<td>as set</td>
+<td>as set</td>
+</tr>
+<tr>
+<td>1500 Hz</td>
+<td>1282/s (SPI saturated)</td>
+<td>as set</td>
+</tr>
+<tr>
+<td>up to 3000 Hz</td>
+<td>—</td>
+<td>as set</td>
+</tr>
+</tbody>
+</table>
+<p>Host-paced frames, sent as fast as possible ("shown" = distinct frames that
+reached the panels; for streamed frames, at most min(sends, transfers)):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Refresh</th>
+<th>Commands/s</th>
+<th>Frames shown/s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET_FRAME_POSITION (SD, GS16)</td>
+<td>300 Hz</td>
+<td>571</td>
+<td>298</td>
+</tr>
+<tr>
+<td></td>
+<td>500 Hz</td>
+<td>478</td>
+<td>473</td>
+</tr>
+<tr>
+<td></td>
+<td>1000 Hz</td>
+<td>353</td>
+<td>352</td>
+</tr>
+<tr>
+<td>STREAM_FRAME GS16 (4064 B)</td>
+<td>300 Hz</td>
+<td>1107</td>
+<td>≤ 300</td>
+</tr>
+<tr>
+<td></td>
+<td>1000 Hz</td>
+<td>951</td>
+<td>≤ 951</td>
+</tr>
+<tr>
+<td></td>
+<td>1250 Hz</td>
+<td>415</td>
+<td>≤ 415</td>
+</tr>
+<tr>
+<td>STREAM_FRAME GS2 (1064 B)</td>
+<td>1000 Hz</td>
+<td>2340</td>
+<td>≤ 1000</td>
+</tr>
+</tbody>
+</table>
+<p>Each refresh transfer blocks the controller's main loop (about 0.7 ms for a
+2x10 GS16 frame), so higher refresh rates leave less time for commands; at
+1250 Hz and above, GS16 transfers saturate SPI and command handling drops
+sharply. A streamed frame takes effect when it arrives, so it is displayed
+if the host sends frames no faster than the refresh rate (each frame then
+stays in place for at least one refresh period). An SD frame
+(SET_FRAME_POSITION) takes effect only after the controller has read it from
+the card, which usually takes about 1.7 ms but occasionally stalls; at fps
+close to the refresh rate a delayed frame can then be replaced before it is
+shown (seen once: 1 of 99 frames at 200 fps with a 300 Hz refresh). For SD
+playback that must show every frame, keep fps well below the refresh rate or
+raise the refresh rate, and check with <code>play_frames(..., verify=True)</code>.</p>
+<h3 id="concurrency">Concurrency<a class="headerlink" href="#concurrency" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The device parses one command at a time and has <strong>one response buffer</strong>. A
+  response that the host has not drained yet can be <strong>overwritten</strong> by the next
+  command's response. The host must wait for each reply before sending the next
+  command (single flight).</li>
+<li>During a bulk transfer the device does not process other commands on the
+  serial link. The host must not send anything until the transfer completes.</li>
+</ul>
+<h2 id="quirks">Quirks<a class="headerlink" href="#quirks" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Binary command length limit.</strong> Length byte must be ≤ <code>0x31</code>, so a binary
+   command carries at most 48 parameter bytes. SET_AO_LUT therefore accepts at
+   most 21 entries per command, although the firmware buffer holds 4096
+   (<code>CommandProcessor.cpp:938</code> checks only <code>needed ≤ 255</code>).</li>
+<li><strong>Display keeps running after the host disconnects.</strong> USB CDC disconnect
+   does not change the device state. A "safe" close must send ALL_OFF (see
+   <a href="#host-side-decisions">Host-side decisions</a>).</li>
+<li><strong>GET_SD_INFO</strong> returns its full payload with status 1 when no card is
+   mounted.</li>
+<li><strong>SET_REFRESH_RATE is sticky</strong> for the rest of the boot: after one explicit
+   rate, the per-grayscale defaults are no longer applied.</li>
+<li><strong>Index shifting.</strong> DELETE and RENAME re-sort the 1-based pattern indices;
+   cached index → name maps must be refreshed afterwards.</li>
+<li><strong>Patterns must match the arena.</strong> A pattern whose rows × cols differ from
+   the firmware build is rejected (<code>CE_ARENA_MISMATCH</code>).</li>
+<li><strong>Status 1 is overloaded.</strong> It means both "generic error" and
+   <code>CE_UNKNOWN_CMD</code>; only the ASCII message distinguishes them.</li>
+<li>Bulk download failures are silent: the only signal is a short byte count.</li>
+</ol>
+<h2 id="discrepancies">Discrepancies<a class="headerlink" href="#discrepancies" title="Permanent link">&para;</a></h2>
+<p>Firmware and JS disagree in the places below. The library follows the firmware.</p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Firmware</th>
+<th>JS</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Commands 0xD0/0xD1 (panel inventory), 0xB0/0xB1 (I2C bridge), 0xA5–0xA7 (analog cal), feature bitmap after MAC in 0xC2</td>
+<td>Not present</td>
+<td>Encoded/decoded</td>
+<td>Omit (they come from a newer firmware). Sending them to this firmware would trigger a CE 01 glyph.</td>
+</tr>
+<tr>
+<td>SET_AO_LUT (0xA2), SET_PATTERN_ID (0x03), PSRAM (0x3A/0x3B)</td>
+<td>Implemented</td>
+<td>Not encoded</td>
+<td>Implement.</td>
+</tr>
+<tr>
+<td>GET_AO_VOLTAGE meaning</td>
+<td>DAC hardware readback (quantized)</td>
+<td>"last commanded level"</td>
+<td>Document as readback.</td>
+</tr>
+<tr>
+<td>GET_ANALOG_IN length</td>
+<td>4 bytes</td>
+<td>Optional 5th flags byte</td>
+<td>Decode 4 bytes; tolerate a longer payload.</td>
+</tr>
+<tr>
+<td>GET_PATTERN_INFO byte 11</td>
+<td><code>duty_cycle</code></td>
+<td><code>stretch</code></td>
+<td>Name it <code>duty_cycle</code>.</td>
+</tr>
+<tr>
+<td>GET_HEALTH size/version</td>
+<td>ver 5, 114 bytes (code); header comment still says ver 1 / 66 B</td>
+<td>Decodes 55 B base + tails up to v5</td>
+<td>Decode by length like the JS, documenting v5.</td>
+</tr>
+<tr>
+<td>GET_CRASHREPORT gate</td>
+<td>flags bit 3</td>
+<td>One comment says bit 2, another bit 3</td>
+<td>Bit 3.</td>
+</tr>
+<tr>
+<td>SET_SD_DIAG gate</td>
+<td>flags bit 6</td>
+<td>Comment says bit 5</td>
+<td>Bit 6.</td>
+</tr>
+<tr>
+<td>GET_TELEMETRY_BLOCK max_bytes</td>
+<td>Capped at 178</td>
+<td>Default 180</td>
+<td>Default 178.</td>
+</tr>
+<tr>
+<td>SET_SPI_CLOCK range</td>
+<td>Clamps to 1–30, echoes applied</td>
+<td>Throws outside 1–30</td>
+<td>Validate 1–30 locally (clearer errors); return the applied value.</td>
+</tr>
+<tr>
+<td>Comments on 0xC1/0xC2 encoders</td>
+<td>—</td>
+<td>Say <code>01 C0</code> / <code>01 C1</code></td>
+<td>JS comment typos; opcodes are 0xC1 / 0xC2.</td>
+</tr>
+<tr>
+<td>Stream frame sizes</td>
+<td>Depend on build (20/40/48 panels)</td>
+<td>Default 20 panels</td>
+<td>Derive from GET_FIRMWARE_VERSION rows × cols.</td>
+</tr>
+<tr>
+<td>Pixel row order inside a panel block</td>
+<td>Controller passes blocks through. <strong>Panel firmware</strong> (<code>reference/panel/</code>): first 20 pixels = <strong>top</strong> row. But the controller's own error glyph (<code>ErrorGlyph.cpp:72-82</code>) packs the <strong>bottom</strong> row first, citing the g6_04 spec ("origin bottom-left, pixel_num = row_from_bottom × 20 + col").</td>
+<td><code>pat-encoder.js</code>/<code>pat-parser.js</code>: top row first. <code>g6-encoding.js</code> ("matches MATLAB <code>g6_encode_panel.m</code>"): bottom row first.</td>
+<td><strong>Top row first</strong>, as the panel firmware does (matches <code>pat-encoder.js</code>). Confirmed on hardware: the controller's "CE NN" glyph appears vertically flipped (upside-down digits above "CE"). This is a controller-firmware bug in <code>ErrorGlyph.cpp</code>, and the g6_04 spec text and <code>g6-encoding.js</code> are out of step with the panel firmware.</td>
+</tr>
+<tr>
+<td>Partial arenas (panel mask with gaps)</td>
+<td>Mask popcount checked only</td>
+<td>Encoder assumes full grid</td>
+<td>Full grid only for now.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="host-side-decisions">Host-side decisions<a class="headerlink" href="#host-side-decisions" title="Permanent link">&para;</a></h2>
+<p>Behaviour the library adds on top of the wire protocol, as agreed in review.</p>
+<ul>
+<li><strong>Close sends ALL_OFF by default.</strong> Closing the connection (explicitly or by
+  leaving a <code>with</code> block, including on an exception) sends ALL_OFF before
+  releasing the port, so the arena goes dark. This can be turned off per
+  connection with <code>Device.open(..., all_off_on_close=False)</code> (or the
+  <code>all_off_on_close</code> attribute), for example to leave a stimulus running after a script exits.
+  The ALL_OFF is best-effort: if the device has already disappeared, close
+  still releases the port and does not raise.</li>
+<li><strong>Patterns are built from pixel arrays.</strong> The library builds and parses
+  <code>.pat</code> files and stream-frame payloads from whole-arena pixel arrays
+  (GS2: 0/1, GS16: 0–15), handling panel splitting, row order within panels,
+  packing, parity and CRCs. It accepts plain nested sequences with no extra
+  dependency; numpy arrays are accepted too when numpy is installed (an
+  optional extra, e.g. <code>pip install arena-interface[numpy]</code>), so pyserial
+  remains the only required runtime dependency.</li>
+<li><strong>Pixel array orientation is selectable, top-origin by default.</strong> Every
+  function that takes or returns a pixel array has an <code>origin</code> argument named
+  after matplotlib's <code>imshow</code>: <code>"upper"</code> (default) means row 0 is the top of
+  the arena; <code>"lower"</code> means row 0 is the bottom (the <code>pat-encoder.js</code> /
+  MATLAB / G4 convention). Columns run left to right in both. The library
+  converts to the on-wire order (top row first within each panel) internally.</li>
+<li><strong>Auto-detect is optional, and probes by default.</strong> VID/PID <code>16C0:0483</code>
+  matches any Teensy running USB serial, so:<ul>
+<li>An explicit port skips detection entirely; no other port is touched.</li>
+<li><code>find_ports()</code> lists VID/PID matches and sends nothing.</li>
+<li>With no port given, a single match is opened directly. With several
+  matches, each is confirmed with <code>GET_CONTROLLER_INFO</code> (<code>01 C2</code>); this
+  probing is on by default and can be turned off with <code>probe=False</code>.
+  If the choice is still ambiguous, an error lists the candidates and
+  asks for an explicit port.</li>
+</ul>
+</li>
+<li><strong>Unsupported commands are refused locally.</strong> On connect the library reads
+  <code>GET_CONTROLLER_INFO</code> (0xC2) and, when capability bit 7 is set,
+  <code>GET_FIRMWARE_VERSION</code> (0xCB). A method whose command is gated by a
+  capability bit or firmware flag that the device does not advertise (see
+  <a href="#capability-and-feature-flags">Capability and feature flags</a>) raises
+  <code>UnsupportedCommand</code> without sending anything, so it can never trigger the
+  CE 01 glyph. Ungated commands are always sent. Opcodes this firmware does
+  not implement at all (the reserved ones and the newer-firmware commands
+  listed under <a href="#discrepancies">Discrepancies</a>) are not exposed.</li>
+<li>
+<p><strong>Diagnostic and bench commands live in a <code>diagnostics</code> namespace.</strong> All
+  firmware commands are supported, but the ones meant for bench work and
+  post-mortems are grouped under <code>device.diagnostics</code> so the main API stays
+  focused on running experiments: GET_HEALTH (0xCA), GET_CRASHREPORT (0xCC),
+  GET_SD_INFO / SET_SD_DIAG (0xCD / 0xCE), GET/SET_DIAG_OUTPUT (0xC3 / 0xC4)
+  and GET/SET_SPI_CLOCK (0xC5 / 0xC6). The telemetry ring (0xA8 / 0xA9) has
+  its own <code>device.telemetry</code> group (changed in M6: frame and state events are
+  useful for ordinary experiment logs, not just debugging). The telemetry
+  <strong>watchdog bits</strong>
+  (SET_TELEMETRY bits 4–6: disable or starve the watchdog, which resets the
+  controller) are <strong>not exposed</strong>; the library always sends them as 0. Panel
+  firmware update (0xE0, 0xE3, 0xC8, 0xC9) is maintenance rather than bench
+  debugging and gets its own group, <code>device.panel_firmware</code>.</p>
+</li>
+<li>
+<p><strong>Arenas are described by geometry, with built-in presets.</strong> An <code>Arena</code>
+  has a full panel grid (rows × cols), the installed columns, and optionally a
+  name and an arena id (written to the <code>.pat</code> header <code>arena_id</code> field; the
+  controller ignores it). The eight G6 arenas from the JS registry are built in
+  as presets: 1 <code>G6_2x10</code>, 2 <code>G6_2x8of10</code>, 3 <code>G6_3x12of18</code>, 4 <code>G6_3x16_full</code>,
+  5 <code>G6_3x10</code>, 6 <code>G6_4x10</code>, 7 <code>G6_1x12of18</code>, 8 <code>G6_3x10of14</code>. A maDisplayTools
+  YAML arena registry can be loaded optionally to add or override presets; this
+  needs PyYAML, provided as an optional extra (<code>arena-interface[yaml]</code>).</p>
+</li>
+<li><strong>Patterns are full-grid.</strong> The panel mask is always "all panels"; columns
+  that are not installed are left blank. This matches the JS tools
+  (<code>pattern-set.js</code>: the controller cannot play partial-arena patterns).</li>
+<li><strong>Rig geometry is mapped onto the firmware build.</strong> The rig (physical arena)
+  may be smaller than the grid the controller firmware is built for (e.g. a
+  3×10 rig on 4×10 firmware; panels that are not present are ignored). Stream
+  frames and patterns encoded for upload use the firmware's grid, following
+  <code>studio-stream-geometry.js</code>: grid column <em>c</em> → firmware column <em>c</em> (installed
+  columns must fit); rig rows are repeated up the frame to fill the firmware's
+  rows. Firmware that does not report its geometry (no capability bit 7) can
+  only stream 20-panel arenas unless the user states the geometry. <strong>Row
+  repetition vs. blank padding is not yet verified on hardware.</strong></li>
+<li><strong>Streaming means polling, exposed as blocking iterators.</strong> The firmware
+  sends nothing unsolicited, so:<ul>
+<li><code>device.telemetry.events()</code> drains the telemetry ring continuously and
+  yields frame, state and command events. A record is acknowledged only
+  after it has been yielded (by the next poll), and the library remembers
+  the last sequence number, so stopping and restarting the loop neither
+  loses nor repeats events. Sequence gaps (ring overflow) are logged and
+  counted.</li>
+<li><code>device.sample(read, rate_hz=...)</code> calls any read method at a fixed
+  rate (drift-free schedule; late samples are skipped and counted).</li>
+<li>Timestamps are <strong>wall-clock</strong> (<code>time.time()</code>). Telemetry times are
+  derived from the controller's microsecond clock relative to the
+  <code>t_now_us</code> in each reply, so the 71.6-minute wrap needs no unwrapping.
+  Records written before the controller's last reset (the ring survives
+  resets) have no host time. The raw controller time is always kept.</li>
+<li>Host-paced frame playback (M6b, scope agreed 2026-11-05): both
+  pre-computed sequences and live (closed-loop) frame choice; both SD
+  frame positions (SET_FRAME_POSITION) and streamed images (STREAM_FRAME);
+  late frames are either skipped (keep the schedule) or all sent, chosen
+  by the caller; feedback on missed timing is always available; blocking
+  and background (thread) playback. No FicTrac bridge for now.
+  Implemented as <code>dev.play_frames()</code> / <code>dev.play_images()</code> (blocking),
+  <code>dev.start_frames()</code> / <code>dev.start_images()</code> (background, returning a
+  <code>Playback</code>), and <code>dev.pace()</code> (live), with <code>late="skip"|"send"</code>, an
+  optional <code>refresh_rate=</code>, a <code>PlaybackReport</code> and <code>verify=True</code> for SD
+  frames; configuration problems raise a <code>PerformanceWarning</code>. Measured
+  on a 2x10 controller: about 575 frame positions/s (SD-limited) and
+  1000-2600 streamed frames/s, but only one frame per panel refresh
+  (300 Hz there) is displayed.</li>
+</ul>
+</li>
+</ul>
+<h2 id="open-questions">Open questions<a class="headerlink" href="#open-questions" title="Permanent link">&para;</a></h2>
+<p>None at present. All questions raised during the M1 review have been
+answered and recorded under <a href="#host-side-decisions">Host-side decisions</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

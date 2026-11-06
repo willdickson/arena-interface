@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/PLAN/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/PROTOCOL/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/SPEC/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/api/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/examples/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/getting-started/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+    <url>
+         <loc>https://willdickson.github.io/arena-interface/user-guide/</loc>
+         <lastmod>2026-11-06</lastmod>
+    </url>
+</urlset>

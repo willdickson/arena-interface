@@ -1,0 +1,1511 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python host library for the G6 arena controller">
+      
+      
+      
+        <link rel="canonical" href="https://willdickson.github.io/arena-interface/user-guide/">
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>User guide - arena-interface</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#user-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="arena-interface" class="md-header__button md-logo" aria-label="arena-interface" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            arena-interface
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              User guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/willdickson/arena-interface" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willdickson/arena-interface
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="arena-interface" class="md-nav__button md-logo" aria-label="arena-interface" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    arena-interface
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/willdickson/arena-interface" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willdickson/arena-interface
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-controller-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the controller works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connecting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#closing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Closing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-and-reconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset and reconnect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#displaying-patterns-from-the-sd-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying patterns from the SD card
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns-from-pixel-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns from pixel arrays
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Patterns from pixel arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arenas-partial-arenas-and-fitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arenas, partial arenas and fitting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-sd-card-pattern-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SD-card pattern library
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-frames-from-the-computer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming frames from the computer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-paced-playback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host-paced playback
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Host-paced playback">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timing-and-late-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing and late frames
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-fast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How fast?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#display-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Display settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analog-and-digital-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analog and digital I/O
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#telemetry-what-the-arena-actually-displayed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Telemetry: what the arena actually displayed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sampling-at-a-fixed-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling at a fixed rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostics-and-panel-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostics and panel firmware
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-your-own-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing your own code
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PROTOCOL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-controller-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the controller works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connecting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#closing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Closing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-and-reconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset and reconnect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#displaying-patterns-from-the-sd-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Displaying patterns from the SD card
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns-from-pixel-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns from pixel arrays
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Patterns from pixel arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arenas-partial-arenas-and-fitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arenas, partial arenas and fitting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-sd-card-pattern-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SD-card pattern library
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-frames-from-the-computer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming frames from the computer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-paced-playback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host-paced playback
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Host-paced playback">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timing-and-late-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing and late frames
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-fast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How fast?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#display-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Display settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analog-and-digital-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analog and digital I/O
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#telemetry-what-the-arena-actually-displayed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Telemetry: what the arena actually displayed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sampling-at-a-fixed-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling at a fixed rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostics-and-panel-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostics and panel firmware
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-your-own-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing your own code
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="user-guide">User guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
+<p>This guide explains how the controller works and how each part of the library
+maps onto it. Every name used here is importable from <code>arena_interface</code>.</p>
+<h2 id="how-the-controller-works">How the controller works<a class="headerlink" href="#how-the-controller-works" title="Permanent link">&para;</a></h2>
+<p>The controller drives a grid of 20 × 20-pixel LED panels from a Teensy 4.1.
+Each firmware build is compiled for one grid (2 × 10, 4 × 10 or 4 × 12 panels);
+the library reads it when connecting: <code>dev.arena</code> is that grid as an
+<a href="../api/#arena_interface.arena.Arena"><code>Arena</code></a> (e.g. the <code>G6_2x10</code> preset), and
+<code>dev.arena.pixel_shape</code> is the image size for patterns.</p>
+<p>The controller is always in one state (<code>ArenaState</code>):</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Started by</th>
+<th>What the arena shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ALL_OFF</code></td>
+<td><code>all_off()</code>, <code>stop()</code>, end of a timed trial, after an error</td>
+<td>Dark</td>
+</tr>
+<tr>
+<td><code>ALL_ON</code></td>
+<td><code>all_on()</code></td>
+<td>Every pixel at full brightness</td>
+</tr>
+<tr>
+<td><code>OPEN_LOOP</code></td>
+<td><code>start_trial(..., TrialMode.OPEN_LOOP)</code></td>
+<td>A pattern advancing at a frame rate</td>
+</tr>
+<tr>
+<td><code>SHOW_FRAME</code></td>
+<td><code>show_pattern()</code>, <code>show_frame()</code>, <code>start_trial(..., TrialMode.SHOW_FRAME)</code></td>
+<td>The frame you choose</td>
+</tr>
+<tr>
+<td><code>CLOSED_LOOP</code></td>
+<td><code>start_trial(..., TrialMode.CLOSED_LOOP)</code></td>
+<td>A pattern whose speed follows Analog In 1</td>
+</tr>
+<tr>
+<td><code>STREAMING_FRAME</code></td>
+<td><code>stream_frame()</code>, <code>stream_image()</code></td>
+<td>A frame sent from the computer</td>
+</tr>
+<tr>
+<td><code>PSRAM_PLAY</code></td>
+<td><code>show_panel_frame()</code>, <code>play_panel_frames()</code></td>
+<td>Frames stored in the panels themselves</td>
+</tr>
+<tr>
+<td><code>ERROR_DISPLAY</code></td>
+<td>A rejected command</td>
+<td>A "CE NN" error code for 0.75 s, then dark</td>
+</tr>
+</tbody>
+</table>
+<p>The controller only ever answers commands; it never sends anything on its
+own. Everything "live" in this library (event streams, sampling) is the
+computer asking repeatedly.</p>
+<h2 id="connecting">Connecting<a class="headerlink" href="#connecting" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>                  <span class="c1"># auto-detect</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"/dev/ttyACM0"</span><span class="p">)</span>    <span class="c1"># a specific port; no detection</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">simulate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>     <span class="c1"># the simulated controller</span>
+</code></pre></div>
+<p>Auto-detection looks for USB serial ports with the Teensy's ids (16C0:0483).
+Any Teensy has these ids, so when several match, the library asks each one
+for its controller information and keeps the one that answers as a G6
+controller (<code>probe=False</code> turns that off and makes several matches an error).
+<code>find_ports()</code> lists candidates without sending anything.</p>
+<p>When connecting, the library reads the controller's identity:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">mac</span>                <span class="c1"># unique per controller</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">firmware</span>                <span class="c1"># FirmwareVersion: git SHA, build date, grid, flags</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">capabilities</span>            <span class="c1"># Capability flags</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">supports</span><span class="p">(</span><span class="n">Capability</span><span class="o">.</span><span class="n">IO_EXT</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="closing">Closing<a class="headerlink" href="#closing" title="Permanent link">&para;</a></h3>
+<p>Close with a <code>with</code> block or <code>dev.close()</code>. Closing sends ALL_OFF first so
+the arena goes dark: the controller otherwise keeps displaying after the
+computer disconnects. Pass <code>all_off_on_close=False</code> (or set the attribute) to
+leave a stimulus running. Closing never raises, even if the device has
+already gone.</p>
+<h3 id="reset-and-reconnect">Reset and reconnect<a class="headerlink" href="#reset-and-reconnect" title="Permanent link">&para;</a></h3>
+<p><code>dev.reset()</code> reboots the controller; the USB connection drops and the
+device object is closed. <code>dev.reconnect()</code> waits (10 s by default) for the
+same controller to come back, checked by its MAC address, so a different
+controller on the same port is not picked up by mistake. <code>reconnect()</code> also
+recovers after a <code>DeviceDisconnected</code> error (cable unplugged).</p>
+<h2 id="displaying-patterns-from-the-sd-card">Displaying patterns from the SD card<a class="headerlink" href="#displaying-patterns-from-the-sd-card" title="Permanent link">&para;</a></h2>
+<p>Patterns on the SD card are addressed by a <strong>1-based id</strong> in alphabetical
+order of file name.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>      <span class="c1"># forwards</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=-</span><span class="mi">60</span><span class="p">)</span>     <span class="c1"># backwards</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">CLOSED_LOOP</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>          <span class="c1"># 2 fps per volt</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>             <span class="c1"># stops by itself</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duty_cycle</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>            <span class="c1"># dimmer, this trial only</span>
+</code></pre></div>
+<p><code>duration</code> is timed by the controller (10 ms resolution, up to 655 s), so the
+trial ends on time even if the computer is busy. <code>duty_cycle</code> overrides the
+brightness stored in the pattern for this trial only.</p>
+<p>To choose each frame yourself:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">show_pattern</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                 <span class="c1"># load, show frame 0, don't advance</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">frame_position</span><span class="o">.</span><span class="n">frame_count</span><span class="p">):</span>
+    <span class="n">dev</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</code></pre></div>
+<p><code>show_frame</code> checks the index locally, because an out-of-range index would
+make the controller show an error code and stop the display.</p>
+<h2 id="patterns-from-pixel-arrays">Patterns from pixel arrays<a class="headerlink" href="#patterns-from-pixel-arrays" title="Permanent link">&para;</a></h2>
+<p>A <a href="../api/#arena_interface.pattern.Pattern"><code>Pattern</code></a> is one image per frame
+covering the whole arena: <code>rows * 20</code> pixels high, <code>cols * 20</code> wide, which
+is <code>dev.arena.pixel_shape</code> for the connected controller.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pattern</span><span class="p">,</span> <span class="n">GrayLevel</span>
+
+<span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">arena</span><span class="o">.</span><span class="n">pixel_shape</span>                      <span class="c1"># e.g. (40, 200) for 2x10</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">15</span> <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span> <span class="o">%</span> <span class="mi">40</span> <span class="o">&lt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">h</span><span class="p">)]</span>
+          <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">)]</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="n">from_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">gray_level</span><span class="o">=</span><span class="n">GrayLevel</span><span class="o">.</span><span class="n">GS16</span><span class="p">,</span> <span class="n">arena</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">arena</span><span class="p">)</span>
+
+<span class="n">pattern_id</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">"stripes.pat"</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="n">pattern_id</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><strong>Gray levels</strong>: <code>GrayLevel.GS2</code> takes 0/1 (or booleans), <code>GrayLevel.GS16</code>
+  takes 0-15.</li>
+<li><strong>Orientation</strong>: row 0 is the <strong>top</strong> of the arena (<code>origin="upper"</code>, as in
+  numpy and matplotlib). Data whose row 0 is the bottom, as in the MATLAB and
+  JavaScript tools, needs <code>origin="lower"</code>. Columns run left to right.</li>
+<li><strong>Brightness</strong>: <code>duty_cycle</code> (1-255, default 128) for all frames or one per
+  frame.</li>
+<li><strong>numpy</strong>: frames can be 2-D arrays or one 3-D array; <code>pattern.to_numpy()</code>
+  returns a <code>(frames, height, width)</code> array. Without numpy, nested lists work.</li>
+<li><strong>Files</strong>: <code>pattern.to_bytes()</code> gives the <code>.pat</code> file; <code>Pattern.from_bytes()</code>
+  reads one (checking every checksum).</li>
+</ul>
+<h3 id="arenas-partial-arenas-and-fitting">Arenas, partial arenas and fitting<a class="headerlink" href="#arenas-partial-arenas-and-fitting" title="Permanent link">&para;</a></h3>
+<p><a href="../api/#arena_interface.arena.Arena"><code>Arena</code></a> describes a rig. The arenas in the
+maDisplayTools registry are built in:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Arena</span><span class="p">,</span> <span class="n">PRESETS</span>
+
+<span class="n">Arena</span><span class="o">.</span><span class="n">preset</span><span class="p">(</span><span class="s2">"G6_2x8of10"</span><span class="p">)</span>    <span class="c1"># 2x10 grid, columns 1-8 installed</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">PRESETS</span><span class="p">)</span>                 <span class="c1"># all preset names</span>
+</code></pre></div>
+<p>Partial-arena presets such as <code>G6_3x12of18</code> describe arenas <strong>built</strong> with a
+permanent cut-out, for example for access when used with a 2-photon
+microscope. Draw a partial arena's images on its full grid; columns without
+panels are ignored.</p>
+<div class="admonition tip">
+<p class="admonition-title">Temporarily removed panels</p>
+<p>Panels or whole columns taken out for a while, to make room for other
+instruments, do not make an arena partial. Keep using the full arena (or
+no <code>arena=</code> at all): the library always sends data for every panel
+position, so the remaining panels display correctly and a replaced panel
+works again with no change on the computer.</p>
+</div>
+<p>A rig can also be smaller than the grid its controller firmware was
+built for (a 3 × 10 rig on 4 × 10 firmware, or <code>G6_3x12of18</code> on 4 × 12). The
+library then fits the image to the firmware's grid: grid column <em>c</em> goes to
+firmware column <em>c</em>, and the rig's rows are repeated up the frame so the
+panels light whichever row connector they are on.</p>
+<div class="highlight"><pre><span></span><code><span class="n">rig</span> <span class="o">=</span> <span class="n">Arena</span><span class="o">.</span><span class="n">preset</span><span class="p">(</span><span class="s2">"G6_3x10"</span><span class="p">)</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="n">from_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">arena</span><span class="o">=</span><span class="n">rig</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">"rig.pat"</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>          <span class="c1"># fitted automatically</span>
+<span class="n">fitted</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">fit_to</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>                     <span class="c1"># or explicitly</span>
+</code></pre></div>
+<p>The controller refuses any <code>.pat</code> file whose grid differs from its own; the
+library checks this before uploading.</p>
+<h2 id="the-sd-card-pattern-library">The SD-card pattern library<a class="headerlink" href="#the-sd-card-pattern-library" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="nb">len</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">)</span>                          <span class="c1"># how many</span>
+<span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">:</span>                 <span class="c1"># PatternEntry(pattern_id, name)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">pattern_id</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                       <span class="c1"># frames, gray level, grid, size</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>            <span class="c1"># the .pat file</span>
+<span class="n">new_id</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">"x.pat"</span><span class="p">,</span> <span class="n">data_or_pattern</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">new_id</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">new_id</span><span class="p">,</span> <span class="s2">"y.pat"</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">new_id</span><span class="p">)</span>
+<span class="n">zip_bytes</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">archive</span><span class="p">()</span>         <span class="c1"># the whole card as a ZIP</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">format_card</span><span class="p">()</span>                 <span class="c1"># erases everything</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ids are positions in alphabetical order, so uploading, renaming and
+deleting can change the ids of other patterns. The methods that change
+the library return the new id; look ids up with <code>patterns.find(name)</code>
+rather than storing them for long.</p>
+</div>
+<p>Downloading, uploading, archiving and formatting need the display to be off:
+call <code>dev.stop()</code> first, otherwise the controller refuses with a
+<code>CommandError</code>.</p>
+<h2 id="streaming-frames-from-the-computer">Streaming frames from the computer<a class="headerlink" href="#streaming-frames-from-the-computer" title="Permanent link">&para;</a></h2>
+<p><code>stream_image()</code> displays one image immediately, without the SD card:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">stream_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">gray_level</span><span class="o">=</span><span class="n">GrayLevel</span><span class="o">.</span><span class="n">GS2</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">stream_image</span><span class="p">(</span><span class="n">rig_image</span><span class="p">,</span> <span class="n">arena</span><span class="o">=</span><span class="n">Arena</span><span class="o">.</span><span class="n">preset</span><span class="p">(</span><span class="s2">"G6_3x10"</span><span class="p">))</span>   <span class="c1"># fitted</span>
+</code></pre></div>
+<p><code>stream_frame(payload)</code> sends a frame payload you encoded yourself
+(<code>pattern.stream_payload(i)</code>). Each frame is one USB transfer of 1-10 KB,
+depending on the arena size and gray level. To send frames at a fixed rate,
+use host-paced playback (next section).</p>
+<p>Frames can also live in the panels' own memory: <code>show_panel_frame(i)</code> and
+<code>play_panel_frames(start, count, fps)</code>.</p>
+<h2 id="host-paced-playback">Host-paced playback<a class="headerlink" href="#host-paced-playback" title="Permanent link">&para;</a></h2>
+<p>Here the computer decides when each frame is shown, either from a sequence
+prepared in advance or chosen live, for example from a tracking system.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">show_pattern</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">play_frames</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">),</span> <span class="n">fps</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>              <span class="c1"># frames of an SD pattern</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">play_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>                  <span class="c1"># streamed images</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>    <span class="c1"># e.g. "200/200 frames at 200/s in 1.00 s; skipped 0, late 0; ..."</span>
+</code></pre></div>
+<p><strong>In the background.</strong> <code>start_frames()</code> and <code>start_images()</code> take the same
+arguments and return a <a href="../api/#arena_interface.playback.Playback"><code>Playback</code></a>
+while the frames play in a separate thread:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">dev</span><span class="o">.</span><span class="n">start_frames</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">),</span> <span class="n">fps</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="k">as</span> <span class="n">player</span><span class="p">:</span>
+    <span class="k">while</span> <span class="n">player</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">progress</span><span class="p">,</span> <span class="s2">"of"</span><span class="p">,</span> <span class="n">player</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>   <span class="c1"># your script keeps working</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">player</span><span class="o">.</span><span class="n">report</span>       <span class="c1"># or player.wait() / player.stop()</span>
+</code></pre></div>
+<p>Your script may keep using the device meanwhile; each of its commands delays
+the next frame slightly, and the report shows the effect. <code>wait()</code> re-raises
+any error the playback hit (for example <code>DeviceDisconnected</code>).</p>
+<p><strong>Live (closed loop).</strong> <code>pace()</code> is a fixed-rate clock; send whatever frame
+you choose on each tick:</p>
+<div class="highlight"><pre><span></span><code><span class="n">pacer</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">pace</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">pacer</span><span class="p">:</span>
+    <span class="n">dev</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">frame_from_tracker</span><span class="p">())</span>     <span class="c1"># or dev.stream_image(...)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pacer</span><span class="o">.</span><span class="n">report</span><span class="p">)</span>
+</code></pre></div>
+<p>Each <a href="../api/#arena_interface.playback.Tick"><code>Tick</code></a> has its slot number, due
+time and lateness; <code>tick.skipped</code> says how many slots were skipped just
+before it, so you can catch up.</p>
+<h3 id="timing-and-late-frames">Timing and late frames<a class="headerlink" href="#timing-and-late-frames" title="Permanent link">&para;</a></h3>
+<p>Frames are scheduled against a fixed clock, so errors do not accumulate. The
+scheduler sleeps until just before each slot and then waits the last fraction
+of a millisecond actively, which gives sub-millisecond timing on Linux, macOS
+and Windows (Python 3.11+).</p>
+<p>When a frame cannot be sent on time (the computer or the controller was
+busy), <code>late="skip"</code> (the default) drops frames whose slot has passed, so the
+sequence keeps its schedule and length; <code>late="send"</code> sends every frame,
+possibly late, so the sequence runs long. Either way:</p>
+<ul>
+<li>the <a href="../api/#arena_interface.playback.PlaybackReport"><code>PlaybackReport</code></a> gives
+  frames sent, skipped and late (more than half a frame period after their
+  slot), and median, 99th-percentile and worst lateness;</li>
+<li>falling behind is logged on <code>arena_interface.playback</code> (at most one line
+  per second);</li>
+<li><code>play_frames(..., verify=True)</code> reads the controller's log afterwards and
+  reports how many frame changes actually reached the panels (<code>displayed</code>,
+  to compare with <code>changes</code>) and how many were replaced unseen.</li>
+</ul>
+<h3 id="how-fast">How fast?<a class="headerlink" href="#how-fast" title="Permanent link">&para;</a></h3>
+<p>A frame is displayed only if it stays in place for at least one refresh of
+the controller (<code>dev.refresh_rate</code>), so keep <code>fps</code> below the refresh rate; a
+<code>PerformanceWarning</code> is issued if it is too close. On a 2x10 arena the
+refresh rate defaults to 300 Hz for GS16 content and 1000 Hz for GS2. Pass
+<code>refresh_rate=</code> to the playback functions to raise it first, but note that a
+refresh rate set from the computer stays in force (for all content) until the
+controller restarts, and that the panels themselves redraw at 1 kHz.</p>
+<p>Frames of an SD pattern also wait for the controller to read them from the
+card. That usually takes under 2 ms but occasionally stalls, so close to the
+refresh rate a frame can now and then be replaced unseen; <code>verify=True</code> shows
+it. Measured limits are in the
+<a href="../PROTOCOL/#refresh-rate-and-measured-performance">protocol reference</a>.</p>
+<h2 id="display-settings">Display settings<a class="headerlink" href="#display-settings" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">refresh_rate</span>                 <span class="c1"># Hz at which the frame is re-sent to the panels</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">refresh_rate</span> <span class="o">=</span> <span class="mi">500</span>           <span class="c1"># stays in force until the controller restarts</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">panel_display_mode</span>           <span class="c1"># PanelDisplayMode: ONESHOT, PERSIST, TRIGGERED, GATED</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">frames_sent</span>                  <span class="c1"># frames pushed to the panels; reset_frames_sent()</span>
+</code></pre></div>
+<h2 id="analog-and-digital-io">Analog and digital I/O<a class="headerlink" href="#analog-and-digital-io" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">io</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">io</span>
+<span class="n">io</span><span class="o">.</span><span class="n">analog_out</span> <span class="o">=</span> <span class="mi">2500</span>                         <span class="c1"># mV, 0-5000; reads back from the DAC</span>
+<span class="n">io</span><span class="o">.</span><span class="n">load_analog_table</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2500</span><span class="p">,</span> <span class="mi">5000</span><span class="p">])</span>        <span class="c1"># follows the frame index (1-21 levels)</span>
+<span class="n">io</span><span class="o">.</span><span class="n">set_analog_out_mode</span><span class="p">(</span><span class="n">AoMode</span><span class="o">.</span><span class="n">FRAME_NUMBER</span><span class="p">)</span>  <span class="c1"># 0 V first frame .. 5 V last frame</span>
+<span class="n">io</span><span class="o">.</span><span class="n">read_analog_in</span><span class="p">()</span>                          <span class="c1"># AnalogInputs(ain1_mv, ain2_mv), uncalibrated</span>
+
+<span class="n">io</span><span class="o">.</span><span class="n">dio_roles</span><span class="p">()</span>                               <span class="c1"># roles and levels of ports 1 and 2</span>
+<span class="n">io</span><span class="o">.</span><span class="n">set_dio_role</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">DioRole</span><span class="o">.</span><span class="n">OUT_PROGRAMMABLE</span><span class="p">)</span>
+<span class="n">io</span><span class="o">.</span><span class="n">set_digital_out</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">io</span><span class="o">.</span><span class="n">read_digital</span><span class="p">()</span>
+</code></pre></div>
+<p>Port 2 starts as the external-trigger input for the triggered and gated
+panel modes; the controller refuses to drive it until its role is changed.
+The analog inputs are not calibrated in firmware; example 23 shows a loopback
+calibration.</p>
+<h2 id="telemetry-what-the-arena-actually-displayed">Telemetry: what the arena actually displayed<a class="headerlink" href="#telemetry-what-the-arena-actually-displayed" title="Permanent link">&para;</a></h2>
+<p>The controller logs every command it receives, every change of the displayed
+frame and every state change, with microsecond timestamps, in a ring buffer
+that survives software resets.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrameRecord</span>
+
+<span class="n">dev</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>                              <span class="c1"># discard older events</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">telemetry</span><span class="o">.</span><span class="n">events</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">2.2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="p">,</span> <span class="n">FrameRecord</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>event.time</code> is wall-clock time (<code>time.time()</code>) of the controller's own
+  timestamp, so it is more accurate than timing on the computer.
+  <code>event.record.t_us</code> is the raw controller time.</li>
+<li>Records are only removed from the controller after they have been
+  returned to you. Breaking out of a loop and starting another neither loses
+  nor repeats events.</li>
+<li>Records written before the controller's last reset have <code>time=None</code>.</li>
+<li>Events lost because the ring overflowed are counted (<code>stream.lost</code>,
+  <code>dev.telemetry.lost</code>) and logged.</li>
+<li>Times stay correct for records hours old: each record is dated from the
+  next newer one. The controller's microsecond clock wraps every 71.6 minutes,
+  so if it logged nothing for longer than that, the gap is ambiguous. The
+  library resolves it from the controller's uptime when the boot record is
+  among the records read; otherwise records before such a gap can be dated
+  71.6 minutes (or a multiple) too late.</li>
+</ul>
+<h2 id="sampling-at-a-fixed-rate">Sampling at a fixed rate<a class="headerlink" href="#sampling-at-a-fixed-rate" title="Permanent link">&para;</a></h2>
+<p><code>dev.sample()</code> calls any reading at a fixed rate:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_analog_in</span><span class="p">,</span> <span class="n">rate_hz</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">ain1_mv</span><span class="p">)</span>
+</code></pre></div>
+<p>The schedule does not drift; readings that cannot keep up are skipped and
+counted (<code>sampler.skipped</code>). Each reading is one USB round trip of about
+1 ms, so a few hundred readings per second is the practical limit.</p>
+<h2 id="diagnostics-and-panel-firmware">Diagnostics and panel firmware<a class="headerlink" href="#diagnostics-and-panel-firmware" title="Permanent link">&para;</a></h2>
+<p><code>dev.diagnostics</code> has the controller's health counters (uptime, loop and SD
+timing, and what the previous boot was doing when it last reset), the last
+CPU fault, SD card identity, debug-text output and the panel SPI clock.</p>
+<p><code>dev.panel_firmware</code> stores a panel firmware image on the SD card, then
+programs and verifies panels one at a time (1-based panel numbers, as on the
+panel map). The display must be off.</p>
+<h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+<p>All exceptions derive from <code>DeviceError</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Meaning</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CommandError</code></td>
+<td>The controller refused a command. <code>.status</code> and <code>.message</code> say why.</td>
+<td>Check the message; <code>ErrorCode.DISPLAY_ACTIVE</code> means stop the display first.</td>
+</tr>
+<tr>
+<td><code>UnsupportedCommand</code></td>
+<td>The firmware does not advertise this feature. Nothing was sent.</td>
+<td>Check <code>dev.supports(...)</code> first, or update the firmware.</td>
+</tr>
+<tr>
+<td><code>DeviceTimeout</code></td>
+<td>No answer in time. Also a <code>TimeoutError</code>.</td>
+<td>Retry; if it persists, reset or replug.</td>
+</tr>
+<tr>
+<td><code>DeviceDisconnected</code></td>
+<td>The connection was lost; the device is now closed.</td>
+<td><code>dev.reconnect()</code>.</td>
+</tr>
+<tr>
+<td><code>DeviceNotFound</code></td>
+<td>No controller found, or the port could not be opened.</td>
+<td>See <a href="../getting-started/#troubleshooting">troubleshooting</a>.</td>
+</tr>
+<tr>
+<td><code>ProtocolError</code></td>
+<td>The device sent malformed data.</td>
+<td>Report it; usually a firmware mismatch.</td>
+</tr>
+</tbody>
+</table>
+<p>Invalid arguments (a frame index out of range, a pattern with the wrong
+size) raise <code>ValueError</code> or <code>TypeError</code> before anything is sent. The library
+checks the cases that would otherwise make the controller show an error code
+and stop the display.</p>
+<h2 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h2>
+<p>Ordinary commands wait 1 s for an answer. Slower commands get longer limits:
+SD-card operations 30 s, programming or verifying a panel 60 s, and
+formatting the card 180 s. Bulk transfers (pattern and archive downloads)
+fail if no data arrives for 5 s.</p>
+<h2 id="threads">Threads<a class="headerlink" href="#threads" title="Permanent link">&para;</a></h2>
+<p>A <code>Device</code> may be shared between threads. Each method is atomic: the wire
+protocol allows one request at a time, and the device serialises them, so a
+thread just waits while another's request is in progress. Multi-step methods
+(such as <code>patterns.upload</code>) hold the lock for their whole sequence. A sequence
+of calls in your own code is not atomic; use your own lock if another thread
+must not interleave. Event streams and samplers release the lock between
+polls, so other threads can send commands while they run.</p>
+<h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
+<p>The library logs through the standard <code>logging</code> module:</p>
+<table>
+<thead>
+<tr>
+<th>Logger</th>
+<th>Level</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arena_interface.transport</code></td>
+<td>DEBUG</td>
+<td>Every byte sent and received</td>
+</tr>
+<tr>
+<td><code>arena_interface.transport</code></td>
+<td>WARNING</td>
+<td>Late replies to earlier requests, skipped</td>
+</tr>
+<tr>
+<td><code>arena_interface.framing</code></td>
+<td>WARNING</td>
+<td>Bytes from the device that were not a valid frame</td>
+</tr>
+<tr>
+<td><code>arena_interface.firmware</code></td>
+<td>INFO</td>
+<td>Debug text printed by debug firmware builds</td>
+</tr>
+<tr>
+<td><code>arena_interface.streaming</code></td>
+<td>WARNING</td>
+<td>Lost telemetry records</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"arena_interface.transport"</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="testing-your-own-code">Testing your own code<a class="headerlink" href="#testing-your-own-code" title="Permanent link">&para;</a></h2>
+<p><code>Device.open(simulate=True)</code> connects to a
+<a href="../api/#arena_interface.testing.FakeController"><code>FakeController</code></a>, which
+emulates the firmware: the same replies, error codes and side effects, an
+in-memory SD card, the telemetry log and the I/O state. Pass your own
+controller to configure it or to inject faults:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FakeController</span><span class="p">,</span> <span class="n">make_test_pattern</span>
+
+<span class="n">ctrl</span> <span class="o">=</span> <span class="n">FakeController</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">"a.pat"</span><span class="p">:</span> <span class="n">make_test_pattern</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">)})</span>
+<span class="k">with</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">simulate</span><span class="o">=</span><span class="n">ctrl</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev</span><span class="p">:</span>
+    <span class="n">ctrl</span><span class="o">.</span><span class="n">analog_in</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="o">-</span><span class="mi">200</span><span class="p">)</span>          <span class="c1"># what the inputs read</span>
+    <span class="n">ctrl</span><span class="o">.</span><span class="n">unplug</span><span class="p">()</span>                          <span class="c1"># the next command raises DeviceDisconnected</span>
+</code></pre></div>
+<p><code>dev.simulator</code> gives access to the controller of a simulated device. The
+simulator does not render pixels.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>
