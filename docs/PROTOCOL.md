@@ -546,10 +546,9 @@ Behaviour the library adds on top of the wire protocol, as agreed in review.
 - **Patterns are built from pixel arrays.** The library builds and parses
   `.pat` files and stream-frame payloads from whole-arena pixel arrays
   (GS2: 0/1, GS16: 0–15), handling panel splitting, row order within panels,
-  packing, parity and CRCs. It accepts plain nested sequences with no extra
-  dependency; numpy arrays are accepted too when numpy is installed (an
-  optional extra, e.g. `pip install arena-interface[numpy]`), so pyserial
-  remains the only required runtime dependency.
+  packing, parity and CRCs. numpy is a required dependency (decided
+  2026-11-06; it was an optional extra before): images may be numpy arrays
+  or nested lists, and frames are returned as uint8 numpy arrays.
 - **Pixel array orientation is selectable, top-origin by default.** Every
   function that takes or returns a pixel array has an `origin` argument named
   after matplotlib's `imshow`: `"upper"` (default) means row 0 is the top of

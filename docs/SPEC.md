@@ -34,7 +34,7 @@ with Device.open() as dev:              # auto-detect
 ```
 
 ## Non-functional requirements
-- Uses pyserial only; blocking API (async is out of scope for v1).
+- Uses pyserial and numpy only; blocking API (async is out of scope for v1).
 - Sensible timeouts; no hangs if the device disappears (raise `DeviceDisconnected`).
 - Works on Linux, macOS, Windows.
 - Thread-safety: state clearly in the docs whether the Device may be shared

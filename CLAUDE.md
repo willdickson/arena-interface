@@ -16,7 +16,7 @@ Progress is tracked in docs/PLAN.md.
 - Package manager is uv. Add deps with `uv add` (`uv add --dev` for dev tools).
   Never use pip or edit dependency lists in pyproject.toml by hand.
 - Python >= 3.11, src layout (`src/arena_interface/`), fully type-hinted, include `py.typed`.
-- Only runtime dependency is `pyserial`.
+- Runtime dependencies are `pyserial` and `numpy` only.
 - Docstrings: Google style (rendered by mkdocstrings).
 
 ## Reference material (read-only, do not modify)

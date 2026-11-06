@@ -1,6 +1,6 @@
 """Build a pattern from pixel arrays and save it as a .pat file.
 
-Shows: Pattern.from_frames() with nested lists (numpy arrays work too), an
+Shows: Pattern.from_frames() with numpy arrays (nested lists work too), an
 arena preset, gray levels, duty cycle, origin="lower" for bottom-origin data,
 to_bytes() and reading the file back with Pattern.from_bytes(). Upload the
 result with device.patterns.upload("grating.pat", pattern).
@@ -10,14 +10,16 @@ Requires: nothing (no controller needed). Writes grating.pat.
 import argparse
 from pathlib import Path
 
+import numpy as np
+
 from arena_interface import Arena, GrayLevel, Pattern
 
 
-def grating(height: int, width: int, shift: int, period: int = 20) -> list[list[int]]:
+def grating(height: int, width: int, shift: int, period: int = 20) -> np.ndarray:
     """A triangle-wave grating with 16 brightness levels, moved by `shift` pixels."""
-    wave = [round(15 * (1 - abs(2 * i / period - 1))) for i in range(period)]
-    row = [wave[(x + shift) % period] for x in range(width)]
-    return [list(row) for _ in range(height)]
+    phase = ((np.arange(width) + shift) % period) / period
+    row = np.round(15 * (1 - np.abs(2 * phase - 1))).astype(np.uint8)
+    return np.tile(row, (height, 1))
 
 
 def main() -> None:
@@ -42,12 +44,12 @@ def main() -> None:
 
     # Orientation: by default row 0 is the TOP of the arena. Data whose row 0 is
     # the bottom (MATLAB / JS convention) needs origin="lower".
-    marker = [[0] * width for _ in range(height)]
-    marker[0][0] = 15
+    marker = np.zeros((height, width), dtype=np.uint8)
+    marker[0, 0] = 15
     top = Pattern.from_frames([marker], arena=arena)
     bottom = Pattern.from_frames([marker], arena=arena, origin="lower")
-    row_top = [r[0] for r in top.frame(0)].index(15)
-    row_bottom = [r[0] for r in bottom.frame(0)].index(15)
+    row_top = int(np.argmax(top.frame(0)[:, 0]))  # frame() returns a numpy array
+    row_bottom = int(np.argmax(bottom.frame(0)[:, 0]))
     print(f"marker in row {row_top} vs {row_bottom} (rows counted from the top)")
 
     again = Pattern.from_bytes(args.output.read_bytes())

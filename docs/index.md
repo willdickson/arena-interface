@@ -19,7 +19,7 @@ with Device.open() as dev:                      # finds the controller by USB id
   digital I/O, health and crash diagnostics, the telemetry log, and panel
   firmware updates.
 - **Patterns from pixel arrays**: build `.pat` files and stream frames from
-  nested lists or numpy arrays, for any arena preset or custom grid. The
+  numpy arrays or nested lists, for any arena preset or custom grid. The
   output matches the JavaScript tools byte for byte.
 - **Host-paced playback**: play frame sequences at a fixed rate (SD frames or
   streamed images), blocking, in the background, or live, with a timing
@@ -45,6 +45,6 @@ with Device.open() as dev:                      # finds the controller by USB id
 ## Requirements
 
 - Python 3.11 or newer on Linux, macOS or Windows.
-- [pyserial](https://pyserial.readthedocs.io/), installed automatically.
-- Optional: numpy (faster pattern encoding, array input/output), matplotlib
-  (plotting example), Jupyter (notebook example).
+- [pyserial](https://pyserial.readthedocs.io/) and [numpy](https://numpy.org/),
+  installed automatically.
+- Optional: matplotlib (plotting example), Jupyter (notebook example).

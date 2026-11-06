@@ -15,7 +15,6 @@ from arena_interface import (
     Pattern,
     ProtocolError,
 )
-from arena_interface import pattern as pattern_module
 from arena_interface.protocol import ArenaState
 from arena_interface.testing import FakeController
 
@@ -28,18 +27,10 @@ def _image(rows: int, cols: int, value, frame: int = 0) -> list[list[int]]:
     return [[value(x, y, frame) for x in range(w)] for y in range(h)]
 
 
-@pytest.fixture(params=["numpy", "pure"])
-def backend(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> str:
-    """Run a test with the numpy fast path and with the pure-Python path."""
-    if request.param == "pure":
-        monkeypatch.setattr(pattern_module, "_np", None)
-    return str(request.param)
-
-
 # -- byte-for-byte agreement with the JavaScript encoder ---------------------
 
 
-def test_matches_js_gs16(backend: str) -> None:
+def test_matches_js_gs16() -> None:
     frames = [
         _image(2, 10, lambda x, y, f: (x * 7 + y * 3 + f) % 16, f) for f in range(3)
     ]
@@ -52,7 +43,7 @@ def test_matches_js_gs16(backend: str) -> None:
     assert p.to_bytes() == (DATA / "js_gs16_2x10.pat").read_bytes()
 
 
-def test_matches_js_gs2(backend: str) -> None:
+def test_matches_js_gs2() -> None:
     value = lambda x, y, f: 1 if (x + 2 * y + f) % 3 == 0 else 0  # noqa: E731
     frames = [_image(2, 10, value, f) for f in range(2)]
     p = Pattern.from_frames(
@@ -65,7 +56,7 @@ def test_matches_js_gs2(backend: str) -> None:
     assert p.to_bytes() == (DATA / "js_gs2_2x10.pat").read_bytes()
 
 
-def test_matches_js_4x12(backend: str) -> None:
+def test_matches_js_4x12() -> None:
     value = lambda x, y, f: 15 if (y < 20 and x < 20) else ((x ^ y) & 15)  # noqa: E731
     p = Pattern.from_frames([_image(4, 12, value)], origin="lower")
     assert p.to_bytes() == (DATA / "js_gs16_4x12.pat").read_bytes()
@@ -74,7 +65,7 @@ def test_matches_js_4x12(backend: str) -> None:
 @pytest.mark.parametrize(
     "name", ["js_gs16_2x10.pat", "js_gs2_2x10.pat", "js_gs16_4x12.pat"]
 )
-def test_round_trip_js_files(name: str, backend: str) -> None:
+def test_round_trip_js_files(name: str) -> None:
     data = (DATA / name).read_bytes()
     p = Pattern.from_bytes(data)
     assert p.to_bytes() == data
@@ -116,7 +107,7 @@ def _panel_firmware_view(
     return out
 
 
-def test_pixel_placement_matches_panel_firmware(backend: str) -> None:
+def test_pixel_placement_matches_panel_firmware() -> None:
     img = [[0] * 200 for _ in range(40)]  # 2x10, row 0 = top
     img[0][0] = 15  # top-left pixel of the arena
     img[39][199] = 9  # bottom-right pixel
@@ -141,7 +132,7 @@ def test_origin_lower_flips_rows() -> None:
     assert lower.frame(0, origin="lower")[0][0] == 7
 
 
-def test_block_headers_have_valid_parity(backend: str) -> None:
+def test_block_headers_have_valid_parity() -> None:
     img = [[(x + y) % 16 for x in range(200)] for y in range(40)]
     payload = Pattern.from_frames([img]).stream_payload(0)
     for k in range(20):
@@ -173,11 +164,31 @@ def test_numpy_bool_gs2() -> None:
     assert p.frame(0)[0][0] == 1 and p.frame(0)[0][1] == 0
 
 
-def test_to_numpy_without_numpy(monkeypatch: pytest.MonkeyPatch) -> None:
-    p = Pattern.from_frames([[[0] * 200 for _ in range(40)]])
-    monkeypatch.setattr(pattern_module, "_np", None)
-    with pytest.raises(ImportError, match=r"arena-interface\[numpy\]"):
-        p.to_numpy()
+def test_frames_are_independent_copies() -> None:
+    p = Pattern.from_frames(np.zeros((2, 40, 200), dtype=np.uint8))
+    image = p.frame(0)
+    assert image.dtype == np.uint8 and image.shape == (40, 200)
+    image[0, 0] = 15
+    assert p.frame(0)[0, 0] == 0
+
+
+def test_list_input_matches_array_input() -> None:
+    img = [[(x + y) % 16 for x in range(200)] for y in range(40)]
+    assert Pattern.from_frames([img]) == Pattern.from_frames(np.array([img]))
+
+
+@pytest.mark.parametrize(
+    ("frames", "error", "match"),
+    [
+        (np.zeros((1, 40, 200)), TypeError, "float"),
+        ([[[0] * 200] * 39 + [[0] * 199]], ValueError, "same size"),
+        (np.zeros((40, 200), dtype=np.uint8), ValueError, "3-D"),
+        ([[[-1] * 200] * 40], ValueError, "got -1"),
+    ],
+)
+def test_invalid_arrays(frames: object, error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        Pattern.from_frames(frames)
 
 
 # -- validation -------------------------------------------------------------
@@ -308,7 +319,7 @@ def test_invalid_arena(kwargs: dict) -> None:
 # -- through the Device ------------------------------------------------------
 
 
-def test_stream_image(backend: str) -> None:
+def test_stream_image() -> None:
     ctrl = FakeController()
     img = [[(x // 20) % 16 for x in range(200)] for _ in range(40)]
     with Device.open(simulate=ctrl) as dev:

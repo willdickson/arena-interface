@@ -19,7 +19,7 @@ with Device.open() as dev:                       # finds the controller by USB i
 - Every firmware command: display control, trials from the SD card,
   host-chosen frames, streamed frames, the SD pattern library, analog and
   digital I/O, diagnostics, the telemetry log and panel firmware updates.
-- Patterns from pixel arrays (nested lists or numpy): `.pat` files and stream
+- Patterns from pixel arrays (numpy arrays or nested lists): `.pat` files and stream
   frames for any arena preset or custom grid, byte-identical to the
   JavaScript tools.
 - Host-paced playback of frame sequences (SD frames or streamed images),
@@ -32,8 +32,8 @@ with Device.open() as dev:                       # finds the controller by USB i
 - A simulated controller that behaves like the firmware, so everything runs
   without hardware.
 
-Requires Python 3.11+ on Linux, macOS or Windows. The only required
-dependency is pyserial; numpy is optional.
+Requires Python 3.11+ on Linux, macOS or Windows. Dependencies:
+pyserial and numpy, installed automatically.
 
 ## Install
 
@@ -41,14 +41,12 @@ From a copy of this repository:
 
 ```bash
 uv sync                    # development environment (.venv)
-uv sync --extra numpy      # with optional numpy support
 ```
 
 or, into another environment:
 
 ```bash
 pip install /path/to/arena-interface
-pip install "/path/to/arena-interface[numpy]"
 ```
 
 On Linux, install PJRC's Teensy udev rules so your user can open the port;

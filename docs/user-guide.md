@@ -122,8 +122,10 @@ dev.start_trial(pattern_id, frame_rate=40)
   JavaScript tools, needs `origin="lower"`. Columns run left to right.
 - **Brightness**: `duty_cycle` (1-255, default 128) for all frames or one per
   frame.
-- **numpy**: frames can be 2-D arrays or one 3-D array; `pattern.to_numpy()`
-  returns a `(frames, height, width)` array. Without numpy, nested lists work.
+- **Arrays**: frames can be 2-D numpy arrays, nested lists, or one 3-D array
+  `(frames, height, width)`, with any integer or boolean dtype.
+  `pattern.frame(i)` returns one frame as a `(height, width)` uint8 array and
+  `pattern.to_numpy()` all of them as `(frames, height, width)`.
 - **Files**: `pattern.to_bytes()` gives the `.pat` file; `Pattern.from_bytes()`
   reads one (checking every checksum).
 

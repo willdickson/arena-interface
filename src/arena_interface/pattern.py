@@ -2,15 +2,16 @@
 
 A [`Pattern`][arena_interface.pattern.Pattern] holds one image per frame for a
 whole arena: ``rows * 20`` pixels high and ``cols * 20`` wide, with values 0/1
-(GS2) or 0-15 (GS16). Images may be nested lists or, if numpy is installed,
+(GS2) or 0-15 (GS16). Images may be numpy arrays or nested lists; frames come back as
 numpy arrays.
 
 ```python
+import numpy as np
 from arena_interface import Arena, GrayLevel, Pattern
 
 h, w = Arena.preset("G6_2x10").pixel_shape
-stripes = [[[15 if (x + f) % 20 < 10 else 0 for x in range(w)] for _ in range(h)]
-           for f in range(20)]
+x = np.arange(w)
+stripes = [np.tile(np.where((x + f) % 20 < 10, 15, 0), (h, 1)) for f in range(20)]
 pattern = Pattern.from_frames(stripes, gray_level=GrayLevel.GS16)
 data = pattern.to_bytes()               # a .pat file
 ```
@@ -27,25 +28,23 @@ panel's top row (as the panel firmware reads them; see ``docs/PROTOCOL.md``).
 
 from __future__ import annotations
 
-import importlib
 import struct
 from collections.abc import Sequence
 from typing import Any, Literal
+
+import numpy as np
+import numpy.typing as npt
 
 from ._crc import crc8_autosar, crc16_ccitt_false
 from .arena import Arena
 from .errors import ProtocolError
 from .protocol import FRAME_PREFIX_SIZE, PANEL_SIZE, GrayLevel, panel_block_size
 
-_np: Any
-try:  # optional fast path
-    _np = importlib.import_module("numpy")
-except ImportError:  # pragma: no cover - exercised by monkeypatching in tests
-    _np = None
-
 __all__ = ["Origin", "Pattern"]
 
 Origin = Literal["upper", "lower"]
+#: A frame or stack of frames: uint8 pixel values, row 0 at the top.
+Frames = npt.NDArray[np.uint8]
 
 #: Panels a pattern file can describe (48-bit panel mask).
 MAX_PATTERN_PANELS = 48
@@ -63,140 +62,92 @@ def _check_origin(origin: str) -> None:
         raise ValueError(f"origin must be 'upper' or 'lower', got {origin!r}")
 
 
-# -- image <-> internal bytes (row-major, row 0 = top) -----------------------
-
-
-def _image_bytes(
-    image: Any, height: int, width: int, max_value: int, origin: str
-) -> bytes:
-    """Validate one image and return it as top-origin row-major bytes."""
-    if _np is not None and isinstance(image, _np.ndarray):
-        arr = image
-        if arr.shape != (height, width):
-            raise ValueError(f"image shape {arr.shape} != expected {(height, width)}")
-        if arr.dtype.kind not in "biu":
-            raise TypeError(f"image must hold integers or booleans, not {arr.dtype}")
-        if arr.size and (arr.min() < 0 or arr.max() > max_value):
-            raise ValueError(f"pixel values must be 0..{max_value}")
-        if origin == "lower":
-            arr = arr[::-1]
-        return bytes(_np.ascontiguousarray(arr, dtype=_np.uint8).tobytes())
-    rows = list(image)
-    if len(rows) != height:
-        raise ValueError(f"image has {len(rows)} rows, expected {height}")
-    if origin == "lower":
-        rows.reverse()
-    out = bytearray()
-    for y, row in enumerate(rows):
-        values = list(row)
-        if len(values) != width:
+def _as_frames(frames: Any) -> npt.NDArray[Any]:
+    """Turn a sequence of images (or a 3-D array) into one 3-D array."""
+    if isinstance(frames, np.ndarray):
+        arr = frames
+    else:
+        frame_list = list(frames)
+        if not frame_list:
+            raise ValueError("a pattern needs at least one frame")
+        try:
+            arr = np.asarray(frame_list)
+        except ValueError:  # ragged nested lists
             raise ValueError(
-                f"image row {y} has {len(values)} pixels, expected {width}"
-            )
-        for v in values:
-            if not isinstance(v, int) or not 0 <= v <= max_value:
-                raise ValueError(
-                    f"pixel values must be integers 0..{max_value}, got {v!r}"
-                )
-        out += bytes(values)
-    return bytes(out)
+                "all images must be the same size, with the same number of "
+                "pixels in every row"
+            ) from None
+    if arr.ndim != 3:
+        raise ValueError(
+            "frames must be a sequence of 2-D images or a 3-D array, got shape "
+            f"{arr.shape}"
+        )
+    if arr.shape[0] == 0:
+        raise ValueError("a pattern needs at least one frame")
+    return arr
 
 
-def _to_rows(data: bytes, width: int, origin: str) -> list[list[int]]:
-    rows = [list(data[i : i + width]) for i in range(0, len(data), width)]
-    return rows[::-1] if origin == "lower" else rows
+def _validate(arr: npt.NDArray[Any], height: int, width: int, max_value: int) -> Frames:
+    """Check shape, type and range; return a uint8 copy."""
+    h, w = arr.shape[1:]
+    if (h, w) != (height, width):
+        raise ValueError(
+            f"images are {h}x{w} pixels (shape {arr.shape}), expected {height}x{width}"
+        )
+    if arr.dtype.kind not in "biu":
+        raise TypeError(f"pixel values must be integers or booleans, not {arr.dtype}")
+    lo, hi = int(arr.min()), int(arr.max())
+    if lo < 0 or hi > max_value:
+        bad = lo if lo < 0 else hi
+        raise ValueError(f"pixel values must be 0..{max_value}, got {bad}")
+    return arr.astype(np.uint8)
 
 
-# -- panel packing -----------------------------------------------------------
-
-
-def _panel_pixels(image: bytes, rows: int, cols: int) -> list[bytes]:
-    """Split a top-origin image into 400-pixel panels in wire order."""
-    width = cols * PANEL_SIZE
-    height = rows * PANEL_SIZE
-    panels = []
-    for pr in range(rows):  # 0 = bottom row of panels
-        top = height - (pr + 1) * PANEL_SIZE
-        for pc in range(cols):
-            left = pc * PANEL_SIZE
-            panels.append(
-                b"".join(
-                    image[
-                        (top + y) * width + left : (top + y) * width + left + PANEL_SIZE
-                    ]
-                    for y in range(PANEL_SIZE)
-                )
-            )
-    return panels
-
-
-def _pack_pixels(pixels: bytes, gray: GrayLevel) -> bytes:
-    if gray == GrayLevel.GS16:
-        return bytes((pixels[i] << 4) | pixels[i + 1] for i in range(0, _PIXELS, 2))
-    out = bytearray(50)
-    for i, v in enumerate(pixels):
-        if v:
-            out[i >> 3] |= 0x80 >> (i & 7)
-    return bytes(out)
-
-
-def _unpack_pixels(data: bytes, gray: GrayLevel) -> bytes:
-    if gray == GrayLevel.GS16:
-        return bytes(v for b in data for v in (b >> 4, b & 0x0F))
-    return bytes((data[i >> 3] >> (7 - (i & 7))) & 1 for i in range(_PIXELS))
-
-
-def _block(data: bytes, gray: GrayLevel, duty: int) -> bytes:
-    body = bytes([_OPCODE[gray]]) + data + bytes([duty])
-    ones = 1 + sum(bin(b).count("1") for b in body)  # version bits = 0x01
-    return bytes([0x01 | ((ones & 1) << 7)]) + body
+# -- panel packing (on-wire layout) ------------------------------------------
 
 
 def _encode_blocks(
-    image: bytes, rows: int, cols: int, gray: GrayLevel, duty: int
+    image: Frames, rows: int, cols: int, gray: GrayLevel, duty: int
 ) -> bytes:
-    if _np is None:
-        return b"".join(
-            _block(_pack_pixels(p, gray), gray, duty)
-            for p in _panel_pixels(image, rows, cols)
-        )
-    img = _np.frombuffer(image, dtype=_np.uint8).reshape(
-        rows, PANEL_SIZE, cols, PANEL_SIZE
+    """Pack one top-origin image into panel blocks in wire order."""
+    panels = (
+        image.reshape(rows, PANEL_SIZE, cols, PANEL_SIZE)
+        .transpose(0, 2, 1, 3)[::-1]  # panel row 0 = bottom row of panels
+        .reshape(rows * cols, _PIXELS)
     )
-    panels = img.transpose(0, 2, 1, 3)[::-1].reshape(rows * cols, _PIXELS)
+    data: npt.NDArray[Any]
     if gray == GrayLevel.GS16:
         data = (panels[:, 0::2] << 4) | panels[:, 1::2]
     else:
-        data = _np.packbits(panels.astype(bool), axis=1)
-    n = rows * cols
-    body = _np.empty((n, data.shape[1] + 2), dtype=_np.uint8)
+        data = np.packbits(panels.astype(bool), axis=1)
+    body = np.empty((rows * cols, data.shape[1] + 2), dtype=np.uint8)
     body[:, 0] = _OPCODE[gray]
     body[:, 1:-1] = data
     body[:, -1] = duty
-    ones = 1 + _np.unpackbits(body, axis=1).sum(axis=1)
-    header = (0x01 | ((ones & 1) << 7)).astype(_np.uint8)
-    return bytes(_np.concatenate([header[:, None], body], axis=1).tobytes())
+    ones = 1 + np.unpackbits(body, axis=1).sum(axis=1)  # version bits = 0x01
+    header = (0x01 | ((ones & 1) << 7)).astype(np.uint8)
+    return np.concatenate([header[:, None], body], axis=1).tobytes()
 
 
 def _decode_blocks(
     blocks: bytes, rows: int, cols: int, gray: GrayLevel
-) -> tuple[bytes, int]:
+) -> tuple[Frames, int]:
     """Return the top-origin image and the duty byte of the first block."""
     size = panel_block_size(gray)
-    width, height = cols * PANEL_SIZE, rows * PANEL_SIZE
-    image = bytearray(width * height)
-    for n in range(rows * cols):
-        block = blocks[n * size : (n + 1) * size]
-        pixels = _unpack_pixels(block[2:-1], gray)
-        pr, pc = divmod(n, cols)
-        top = height - (pr + 1) * PANEL_SIZE
-        left = pc * PANEL_SIZE
-        for y in range(PANEL_SIZE):
-            start = (top + y) * width + left
-            image[start : start + PANEL_SIZE] = pixels[
-                y * PANEL_SIZE : (y + 1) * PANEL_SIZE
-            ]
-    return bytes(image), blocks[size - 1]
+    raw = np.frombuffer(blocks, dtype=np.uint8, count=rows * cols * size)
+    data = raw.reshape(rows * cols, size)[:, 2:-1]
+    if gray == GrayLevel.GS16:
+        pixels = np.empty((rows * cols, _PIXELS), dtype=np.uint8)
+        pixels[:, 0::2] = data >> 4
+        pixels[:, 1::2] = data & 0x0F
+    else:
+        pixels = np.unpackbits(data, axis=1)[:, :_PIXELS]
+    image = (
+        pixels.reshape(rows, cols, PANEL_SIZE, PANEL_SIZE)[::-1]
+        .transpose(0, 2, 1, 3)
+        .reshape(rows * PANEL_SIZE, cols * PANEL_SIZE)
+    )
+    return image, int(raw[size - 1])
 
 
 # -- Pattern -----------------------------------------------------------------
@@ -212,7 +163,7 @@ class Pattern:
 
     def __init__(
         self,
-        frames: Sequence[bytes],
+        frames: Frames,
         *,
         arena: Arena,
         gray_level: GrayLevel,
@@ -220,7 +171,8 @@ class Pattern:
         observer_id: int = 0,
     ) -> None:
         """Create from validated internal frames; use the class methods instead."""
-        self._frames = tuple(frames)
+        self._frames = frames
+        self._frames.flags.writeable = False
         self.arena = arena
         """Arena the images are drawn for."""
         self.gray_level = GrayLevel(gray_level)
@@ -247,8 +199,9 @@ class Pattern:
 
         Args:
             frames: Images, each ``rows * 20`` by ``cols * 20`` pixels, as
-                nested lists or 2-D numpy arrays; or one 3-D numpy array
-                ``(frames, height, width)``.
+                2-D numpy arrays or nested lists; or one 3-D array
+                ``(frames, height, width)``. Values may be any integer or
+                boolean type.
             gray_level: GS2 (values 0/1) or GS16 (values 0-15).
             arena: The arena the images are drawn for: an
                 [`Arena`][arena_interface.arena.Arena], ``(rows, cols)``, or
@@ -263,24 +216,23 @@ class Pattern:
 
         Raises:
             ValueError: If the images have the wrong shape or values.
+            TypeError: If the pixel values are not integers or booleans.
 
         Example:
-            >>> blank = [[0] * 200 for _ in range(40)]
-            >>> Pattern.from_frames([blank], gray_level=GrayLevel.GS2).arena
+            >>> blank = np.zeros((1, 40, 200), dtype=np.uint8)
+            >>> Pattern.from_frames(blank, gray_level=GrayLevel.GS2).arena
             Arena(rows=2, cols=10, installed_columns=None, name='', arena_id=0)
         """
         _check_origin(origin)
         gray = GrayLevel(gray_level)
-        frame_list = list(frames)
-        if not frame_list:
-            raise ValueError("a pattern needs at least one frame")
         if not 0 <= observer_id <= 63:
             raise ValueError(f"observer_id must be 0..63, got {observer_id}")
-        resolved = _resolve_arena(arena, frame_list[0])
+        arr = _as_frames(frames)
+        resolved = _resolve_arena(arena, arr.shape[1:])
         height, width = resolved.pixel_shape
-        images = [
-            _image_bytes(f, height, width, _MAX_VALUE[gray], origin) for f in frame_list
-        ]
+        images = _validate(arr, height, width, _MAX_VALUE[gray])
+        if origin == "lower":
+            images = np.ascontiguousarray(images[:, ::-1])
         duties = (
             [duty_cycle] * len(images)
             if isinstance(duty_cycle, int)
@@ -329,7 +281,8 @@ class Pattern:
         frame_size = FRAME_PREFIX_SIZE + blocks_size + 2
         if len(data) < _HEADER_SIZE + frame_count * frame_size:
             raise ProtocolError("pattern file is truncated")
-        images, duties = [], []
+        images: list[Frames] = []
+        duties: list[int] = []
         for f in range(frame_count):
             start = _HEADER_SIZE + f * frame_size
             frame = data[start : start + frame_size]
@@ -341,7 +294,7 @@ class Pattern:
             images.append(image)
             duties.append(duty)
         return cls(
-            images,
+            np.stack(images),
             arena=arena,
             gray_level=gray,
             duty_cycles=duties,
@@ -359,7 +312,7 @@ class Pattern:
         if not isinstance(other, Pattern):
             return NotImplemented
         return (
-            self._frames == other._frames
+            np.array_equal(self._frames, other._frames)
             and (self.arena.rows, self.arena.cols)
             == (other.arena.rows, other.arena.cols)
             and self.gray_level == other.gray_level
@@ -385,25 +338,20 @@ class Pattern:
         """``(height, width)`` of each image."""
         return self.arena.pixel_shape
 
-    def frame(self, index: int, *, origin: Origin = "upper") -> list[list[int]]:
-        """One frame as a list of pixel rows."""
-        _check_origin(origin)
-        return _to_rows(self._frames[index], self.pixel_shape[1], origin)
+    def frame(self, index: int, *, origin: Origin = "upper") -> Frames:
+        """One frame as a ``(height, width)`` uint8 array (a copy).
 
-    def to_numpy(self, *, origin: Origin = "upper") -> Any:
-        """All frames as a ``(frames, height, width)`` uint8 numpy array.
-
-        Raises:
-            ImportError: If numpy is not installed.
+        ``frame(i)[0, 0]`` is the top-left pixel (``origin="upper"``).
         """
         _check_origin(origin)
-        if _np is None:
-            raise ImportError(
-                "to_numpy() needs numpy: pip install arena-interface[numpy]"
-            )
-        h, w = self.pixel_shape
-        arr = _np.frombuffer(b"".join(self._frames), dtype=_np.uint8).reshape(-1, h, w)
-        return arr[:, ::-1].copy() if origin == "lower" else arr.copy()
+        image: Frames = self._frames[index]
+        return (image[::-1] if origin == "lower" else image).copy()
+
+    def to_numpy(self, *, origin: Origin = "upper") -> Frames:
+        """All frames as a ``(frames, height, width)`` uint8 array (a copy)."""
+        _check_origin(origin)
+        frames = self._frames
+        return (frames[:, ::-1] if origin == "lower" else frames).copy()
 
     # -- conversion -------------------------------------------------------
 
@@ -431,16 +379,11 @@ class Pattern:
         src_h, src_w = arena.pixel_shape
         dst_h, dst_w = rows * PANEL_SIZE, cols * PANEL_SIZE
         copy_w = min(src_w, dst_w)
-        fitted = []
-        for image in self._frames:
-            out = bytearray(dst_h * dst_w)
-            for yb in range(dst_h):  # bottom-origin destination row
-                src_top = src_h - 1 - (yb % src_h)
-                dst_top = dst_h - 1 - yb
-                out[dst_top * dst_w : dst_top * dst_w + copy_w] = image[
-                    src_top * src_w : src_top * src_w + copy_w
-                ]
-            fitted.append(bytes(out))
+        # Destination row y (from the top) is bottom-origin row dst_h-1-y,
+        # which repeats source rows counted up from the bottom.
+        bottom_up = (dst_h - 1 - np.arange(dst_h)) % src_h
+        fitted = np.zeros((self.frame_count, dst_h, dst_w), dtype=np.uint8)
+        fitted[:, :, :copy_w] = self._frames[:, src_h - 1 - bottom_up, :copy_w]
         target = Arena(rows, cols, arena_id=arena.arena_id)
         return Pattern(
             fitted,
@@ -495,18 +438,15 @@ class Pattern:
         return bytes(out)
 
 
-def _resolve_arena(arena: Arena | tuple[int, int] | None, first: Any) -> Arena:
+def _resolve_arena(
+    arena: Arena | tuple[int, int] | None, shape: tuple[int, ...]
+) -> Arena:
     if isinstance(arena, Arena):
         return arena
     if arena is not None:
         rows, cols = arena
         return Arena(rows, cols)
-    if _np is not None and isinstance(first, _np.ndarray):
-        height, width = first.shape[:2] if first.ndim >= 2 else (0, 0)
-    else:
-        rows_list = list(first)
-        height = len(rows_list)
-        width = len(list(rows_list[0])) if rows_list else 0
+    height, width = shape
     if height == 0 or width == 0 or height % PANEL_SIZE or width % PANEL_SIZE:
         raise ValueError(
             f"image size {height}x{width} is not a whole number of 20x20 panels; "

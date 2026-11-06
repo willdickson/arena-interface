@@ -15,7 +15,7 @@ Work one milestone at a time. Tick items off as they are completed.
 - [x] M5. High-level `Device` API, exceptions, auto-detect
 - [x] M5a. Patterns from pixel arrays: `Arena` presets, `.pat` encode/decode,
       stream frames, `origin="upper"|"lower"`, rig → firmware-grid mapping;
-      numpy optional extra.
+      numpy required (was an optional extra until 2026-11-06).
   - [ ] M5a-yaml. Optional maDisplayTools YAML arena registry (PyYAML extra).
         Waiting for sample YAML files from the user.
 - [x] M6. Streaming / notifications: telemetry event stream

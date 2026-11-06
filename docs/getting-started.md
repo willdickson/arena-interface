@@ -8,25 +8,21 @@ The library is installed from a copy of this repository.
 
     ```bash
     uv sync                          # creates .venv with the library and dev tools
-    uv sync --extra numpy            # also install the optional numpy support
     ```
 
     To use it from another uv project:
 
     ```bash
-    uv add /path/to/arena-interface            # or: uv add "/path/to/arena-interface[numpy]"
+    uv add /path/to/arena-interface
     ```
 
 === "pip"
 
     ```bash
     pip install /path/to/arena-interface
-    pip install "/path/to/arena-interface[numpy]"   # with numpy support
     ```
 
-The only required dependency is pyserial. numpy is optional: patterns work
-with plain Python lists, and numpy makes encoding faster and lets you pass and
-receive numpy arrays.
+The dependencies, pyserial and numpy, are installed automatically.
 
 ## Allow access to the serial port
 
