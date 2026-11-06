@@ -10021,13 +10021,14 @@ guarantee; <code>Device.open()</code> can confirm candidates by probing them.</p
         <p>Patterns from pixel arrays: build and read <code>.pat</code> files and stream frames.</p>
 <p>A <a class="autorefs autorefs-internal" title="            Pattern" href="#arena_interface.pattern.Pattern"><code>Pattern</code></a> holds one image per frame for a
 whole arena: <code>rows * 20</code> pixels high and <code>cols * 20</code> wide, with values 0/1
-(GS2) or 0-15 (GS16). Images may be nested lists or, if numpy is installed,
+(GS2) or 0-15 (GS16). Images may be numpy arrays or nested lists; frames come back as
 numpy arrays.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Arena</span><span class="p">,</span> <span class="n">GrayLevel</span><span class="p">,</span> <span class="n">Pattern</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Arena</span><span class="p">,</span> <span class="n">GrayLevel</span><span class="p">,</span> <span class="n">Pattern</span>
 
 <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">Arena</span><span class="o">.</span><span class="n">preset</span><span class="p">(</span><span class="s2">"G6_2x10"</span><span class="p">)</span><span class="o">.</span><span class="n">pixel_shape</span>
-<span class="n">stripes</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">15</span> <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">h</span><span class="p">)]</span>
-           <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+<span class="n">stripes</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
 <span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="n">from_frames</span><span class="p">(</span><span class="n">stripes</span><span class="p">,</span> <span class="n">gray_level</span><span class="o">=</span><span class="n">GrayLevel</span><span class="o">.</span><span class="n">GS16</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>               <span class="c1"># a .pat file</span>
 </code></pre></div>
@@ -10090,7 +10091,7 @@ panel's top row (as the panel firmware reads them; see <code>docs/PROTOCOL.md</c
 
 <a href="#arena_interface.pattern.Pattern" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">Pattern</span><span class="p">(</span>
-    <span class="n">frames</span><span class="p">:</span> <span class="n"><span title="collections.abc.Sequence">Sequence</span></span><span class="p">[</span><span class="n"><span title="bytes">bytes</span></span><span class="p">],</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="n"><span title="arena_interface.pattern.Frames">Frames</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">arena</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Arena
 
@@ -10349,8 +10350,9 @@ Patterns are immutable.</p>
             <td>
               <div class="doc-md-description">
                 <p>Images, each <code>rows * 20</code> by <code>cols * 20</code> pixels, as
-nested lists or 2-D numpy arrays; or one 3-D numpy array
-<code>(frames, height, width)</code>.</p>
+2-D numpy arrays or nested lists; or one 3-D array
+<code>(frames, height, width)</code>. Values may be any integer or
+boolean type.</p>
               </div>
             </td>
             <td>
@@ -10501,6 +10503,16 @@ None to infer a full arena from the image size.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="TypeError">TypeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the pixel values are not integers or booleans.</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -10510,8 +10522,8 @@ None to infer a full arena from the image size.</p>
   <blockquote>
 <blockquote>
 <blockquote>
-<p>blank = [[0] * 200 for _ in range(40)]
-Pattern.from_frames([blank], gray_level=GrayLevel.GS2).arena
+<p>blank = np.zeros((1, 40, 200), dtype=np.uint8)
+Pattern.from_frames(blank, gray_level=GrayLevel.GS2).arena
 Arena(rows=2, cols=10, installed_columns=None, name='', arena_id=0)</p>
 </blockquote>
 </blockquote>
@@ -10577,19 +10589,18 @@ Arena(rows=2, cols=10, installed_columns=None, name='', arena_id=0)</p>
 
 
 <a href="#arena_interface.pattern.Pattern.frame" class="headerlink" title="Permanent link">&para;</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">frame</span><span class="p">(</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Origin
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">frame</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Origin
 
 
   
       module-attribute
-   (arena_interface.pattern.Origin)" href="#arena_interface.pattern.Origin">Origin</a></span> <span class="o">=</span> <span class="s2">"upper"</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="int">int</span></span><span class="p">]]</span>
+   (arena_interface.pattern.Origin)" href="#arena_interface.pattern.Origin">Origin</a></span> <span class="o">=</span> <span class="s1">'upper'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="arena_interface.pattern.Frames">Frames</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>One frame as a list of pixel rows.</p>
+        <p>One frame as a <code>(height, width)</code> uint8 array (a copy).</p>
+<p><code>frame(i)[0, 0]</code> is the top-left pixel (<code>origin="upper"</code>).</p>
 
 
     </div>
@@ -10609,35 +10620,12 @@ Arena(rows=2, cols=10, installed_columns=None, name='', arena_id=0)</p>
 
   
       module-attribute
-   (arena_interface.pattern.Origin)" href="#arena_interface.pattern.Origin">Origin</a></span> <span class="o">=</span> <span class="s1">'upper'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Any">Any</span></span>
+   (arena_interface.pattern.Origin)" href="#arena_interface.pattern.Origin">Origin</a></span> <span class="o">=</span> <span class="s1">'upper'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="arena_interface.pattern.Frames">Frames</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>All frames as a <code>(frames, height, width)</code> uint8 numpy array.</p>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ImportError">ImportError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If numpy is not installed.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+        <p>All frames as a <code>(frames, height, width)</code> uint8 array (a copy).</p>
 
 
     </div>

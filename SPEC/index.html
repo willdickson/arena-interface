@@ -608,7 +608,7 @@ USB serial interface, replacing the existing JavaScript host library.</p>
 </code></pre></div>
 <h2 id="non-functional-requirements">Non-functional requirements<a class="headerlink" href="#non-functional-requirements" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Uses pyserial only; blocking API (async is out of scope for v1).</li>
+<li>Uses pyserial and numpy only; blocking API (async is out of scope for v1).</li>
 <li>Sensible timeouts; no hangs if the device disappears (raise <code>DeviceDisconnected</code>).</li>
 <li>Works on Linux, macOS, Windows.</li>
 <li>Thread-safety: state clearly in the docs whether the Device may be shared

@@ -2714,10 +2714,9 @@ raise the refresh rate, and check with <code>play_frames(..., verify=True)</code
 <li><strong>Patterns are built from pixel arrays.</strong> The library builds and parses
   <code>.pat</code> files and stream-frame payloads from whole-arena pixel arrays
   (GS2: 0/1, GS16: 0–15), handling panel splitting, row order within panels,
-  packing, parity and CRCs. It accepts plain nested sequences with no extra
-  dependency; numpy arrays are accepted too when numpy is installed (an
-  optional extra, e.g. <code>pip install arena-interface[numpy]</code>), so pyserial
-  remains the only required runtime dependency.</li>
+  packing, parity and CRCs. numpy is a required dependency (decided
+  2026-11-06; it was an optional extra before): images may be numpy arrays
+  or nested lists, and frames are returned as uint8 numpy arrays.</li>
 <li><strong>Pixel array orientation is selectable, top-origin by default.</strong> Every
   function that takes or returns a pixel array has an <code>origin</code> argument named
   after matplotlib's <code>imshow</code>: <code>"upper"</code> (default) means row 0 is the top of

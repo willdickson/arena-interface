@@ -1131,8 +1131,10 @@ is <code>dev.arena.pixel_shape</code> for the connected controller.</p>
   JavaScript tools, needs <code>origin="lower"</code>. Columns run left to right.</li>
 <li><strong>Brightness</strong>: <code>duty_cycle</code> (1-255, default 128) for all frames or one per
   frame.</li>
-<li><strong>numpy</strong>: frames can be 2-D arrays or one 3-D array; <code>pattern.to_numpy()</code>
-  returns a <code>(frames, height, width)</code> array. Without numpy, nested lists work.</li>
+<li><strong>Arrays</strong>: frames can be 2-D numpy arrays, nested lists, or one 3-D array
+  <code>(frames, height, width)</code>, with any integer or boolean dtype.
+  <code>pattern.frame(i)</code> returns one frame as a <code>(height, width)</code> uint8 array and
+  <code>pattern.to_numpy()</code> all of them as <code>(frames, height, width)</code>.</li>
 <li><strong>Files</strong>: <code>pattern.to_bytes()</code> gives the <code>.pat</code> file; <code>Pattern.from_bytes()</code>
   reads one (checking every checksum).</li>
 </ul>
