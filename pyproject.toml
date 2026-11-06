@@ -11,6 +11,11 @@ dependencies = [
     "pyserial>=3.5",
 ]
 
+[project.urls]
+Homepage = "https://github.com/willdickson/arena-interface"
+Documentation = "https://willdickson.github.io/arena-interface/"
+Repository = "https://github.com/willdickson/arena-interface"
+
 [project.optional-dependencies]
 numpy = [
     "numpy>=2.2.6",

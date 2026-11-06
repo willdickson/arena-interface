@@ -1,5 +1,9 @@
 site_name: arena-interface
 site_description: Python host library for the G6 arena controller
+site_url: https://willdickson.github.io/arena-interface/
+repo_url: https://github.com/willdickson/arena-interface
+repo_name: willdickson/arena-interface
+edit_uri: edit/main/docs/
 theme:
   name: material
   features:
