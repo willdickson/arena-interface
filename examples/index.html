@@ -717,6 +717,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#camerawebcampy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/webcam.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameramoviepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/movie.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraroi_viewpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/roi_view.py
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1164,6 +1197,39 @@
     <span class="md-ellipsis">
       
         plotting/live_plot.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#camerawebcampy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/webcam.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameramoviepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/movie.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraroi_viewpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        camera/roi_view.py
       
     </span>
   </a>
@@ -2536,6 +2602,564 @@ against the simulated controller with no hardware attached:</p>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="camerawebcampy"><code>camera/webcam.py</code><a class="headerlink" href="#camerawebcampy" title="Permanent link">&para;</a></h3>
+<p>Stream a webcam to the arena in real time. A box with the arena's aspect
+ratio, moved and resized with the mouse, picks the part of the picture that
+is shrunk to the arena's pixels and streamed. GS16 with contrast stretching by
+default; <code>--gs2</code> uses dithered on/off pixels. <code>--rotate DEG</code> (0-360) moves
+the picture's centre around the arena. Needs OpenCV
+(<code>uv sync --extra camera</code>); <code>--simulate</code> uses a moving test picture.</p>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Stream a webcam to the arena in real time, through a box you move.</span>
+
+<span class="sd">Shows: capturing with OpenCV, cropping a region with the arena's aspect</span>
+<span class="sd">ratio (chosen live with the mouse), shrinking it to dev.arena.pixel_shape and</span>
+<span class="sd">sending it with dev.stream_image() as fast as the camera delivers frames.</span>
+<span class="sd">GS16 with contrast stretching by default; --gs2 sends on/off pixels with</span>
+<span class="sd">ordered dithering. The image is mirrored, like a mirror you face; --no-mirror</span>
+<span class="sd">turns that off. See roi_view.py for the mouse and keyboard controls.</span>
+<span class="sd">The camera is asked for compressed MJPG frames at 30 fps: raw (YUYV) frames</span>
+<span class="sd">need several times the USB bandwidth and can arrive with bands out of order</span>
+<span class="sd">(seen with a webcam passed through to a virtual machine).</span>
+<span class="sd">Requires: opencv-python (``uv sync --extra camera``) and a webcam, or</span>
+<span class="sd">--simulate, which uses a moving test picture and the simulated controller.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">roi_view</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoiSelector</span><span class="p">,</span> <span class="n">synthetic_frame</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">open_camera</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Open a webcam asking for MJPG frames of the given size at 30 fps."""</span>
+    <span class="n">camera</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">camera</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FOURCC</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter_fourcc</span><span class="p">(</span><span class="o">*</span><span class="s2">"MJPG"</span><span class="p">))</span>  <span class="c1"># before size</span>
+    <span class="n">camera</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_WIDTH</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">camera</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_HEIGHT</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">camera</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FPS</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">camera</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hide_native_warnings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Drop C-library messages (e.g. libjpeg's harmless "Corrupt JPEG data").</span>
+
+<span class="sd">    Many Logitech webcams trigger one per frame. Python's own errors still</span>
+<span class="sd">    show: sys.stderr is moved to a copy of the original stream first.</span>
+<span class="sd">    """</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">dup</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">buffering</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--port"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"serial port (default: auto-detect)"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--simulate"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"fake device and test picture"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--camera"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"camera number"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--width"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"camera image width"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--height"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">480</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"camera image height"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--seconds"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"stop after this long"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--gs2"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"start in GS2 (dithered)"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--mirror"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">BooleanOptionalAction</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"mirror left-right (default: on)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--rotate"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"shift around the arena, 0-360 deg"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--brightness"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"panel duty cycle 1-255"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--no-gui"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"no windows"</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">camera</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">:</span>
+        <span class="n">camera</span> <span class="o">=</span> <span class="n">open_camera</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">camera</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">camera</span><span class="o">.</span><span class="n">isOpened</span><span class="p">():</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot open camera </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">camera</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">hide_native_warnings</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev</span><span class="p">:</span>
+        <span class="n">roi</span> <span class="o">=</span> <span class="n">RoiSelector</span><span class="p">(</span>
+            <span class="n">dev</span><span class="o">.</span><span class="n">arena</span><span class="o">.</span><span class="n">pixel_shape</span><span class="p">,</span>
+            <span class="n">gui</span><span class="o">=</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_gui</span><span class="p">,</span>
+            <span class="n">gs2</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">gs2</span><span class="p">,</span>
+            <span class="n">mirror</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">mirror</span><span class="p">,</span>
+            <span class="n">rotate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">rotate</span><span class="p">,</span>
+            <span class="n">brightness</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">brightness</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">sent</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">(),</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">roi</span><span class="o">.</span><span class="n">poll</span><span class="p">():</span>
+                <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+                <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">elapsed</span> <span class="o">&gt;=</span> <span class="n">args</span><span class="o">.</span><span class="n">seconds</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">camera</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># a 30 fps "camera"</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">sent</span> <span class="o">/</span> <span class="mi">30</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()))</span>
+                    <span class="n">frame</span> <span class="o">=</span> <span class="n">synthetic_frame</span><span class="p">(</span><span class="n">elapsed</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ok</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># waits for the next camera frame</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">"the camera stopped delivering frames"</span><span class="p">)</span>
+                <span class="n">dev</span><span class="o">.</span><span class="n">stream_image</span><span class="p">(</span>
+                    <span class="n">roi</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span>
+                    <span class="n">gray_level</span><span class="o">=</span><span class="n">roi</span><span class="o">.</span><span class="n">gray_level</span><span class="p">,</span>
+                    <span class="n">duty_cycle</span><span class="o">=</span><span class="n">roi</span><span class="o">.</span><span class="n">brightness</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">sent</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">roi</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">camera</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sent </span><span class="si">{</span><span class="n">sent</span><span class="si">}</span><span class="s2"> frames in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s (</span><span class="si">{</span><span class="n">sent</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> fps)"</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="cameramoviepy"><code>camera/movie.py</code><a class="headerlink" href="#cameramoviepy" title="Permanent link">&para;</a></h3>
+<p>The same for a movie file (<code>.mp4</code>, <code>.avi</code>, <code>.gif</code>, ...), played at its own frame rate
+with <code>dev.pace()</code>.</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>examples/camera/movie.py<span class="w"> </span>clip.mp4
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Play a movie file (.mp4, .avi, .gif, ...) on the arena through a box you move.</span>
+
+<span class="sd">Shows: reading frames with OpenCV, dev.pace() keeping the movie's own frame</span>
+<span class="sd">rate (skipping frames if the computer falls behind), and the same</span>
+<span class="sd">crop -&gt; shrink -&gt; dev.stream_image() path as webcam.py. Space pauses (the box</span>
+<span class="sd">still moves); the movie loops unless --once. See roi_view.py for the mouse and</span>
+<span class="sd">keyboard controls.</span>
+<span class="sd">Requires: opencv-python (``uv sync --extra camera``) and a movie file; with</span>
+<span class="sd">--simulate and no file, a moving test picture and the simulated controller.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">roi_view</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoiSelector</span><span class="p">,</span> <span class="n">synthetic_frame</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">next_frame</span><span class="p">(</span><span class="n">video</span><span class="p">:</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">,</span> <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The next frame after skipping `skip` (None at the end without --loop)."""</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">skip</span><span class="p">):</span>
+        <span class="n">video</span><span class="o">.</span><span class="n">grab</span><span class="p">()</span>
+    <span class="n">ok</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span> <span class="ow">and</span> <span class="n">loop</span><span class="p">:</span>
+        <span class="n">video</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_POS_FRAMES</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">ok</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">frame</span> <span class="k">if</span> <span class="n">ok</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"movie"</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">"?"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Path</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"movie file"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--port"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"serial port (default: auto-detect)"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--simulate"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"use fake device"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--speed"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"playback speed"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--once"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"do not loop"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--seconds"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"stop after this long"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--gs2"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"start in GS2 (dithered)"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--mirror"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">BooleanOptionalAction</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"mirror left-right (default: off)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--rotate"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"shift around the arena, 0-360 deg"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--brightness"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"panel duty cycle 1-255"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--no-gui"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"no windows"</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">video</span><span class="p">,</span> <span class="n">fps</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">30.0</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">movie</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">video</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">movie</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">video</span><span class="o">.</span><span class="n">isOpened</span><span class="p">():</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot open </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">movie</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FPS</span><span class="p">)</span> <span class="ow">or</span> <span class="n">fps</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"give a movie file (or --simulate for a test picture)"</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev</span><span class="p">:</span>
+        <span class="n">roi</span> <span class="o">=</span> <span class="n">RoiSelector</span><span class="p">(</span>
+            <span class="n">dev</span><span class="o">.</span><span class="n">arena</span><span class="o">.</span><span class="n">pixel_shape</span><span class="p">,</span>
+            <span class="n">gui</span><span class="o">=</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_gui</span><span class="p">,</span>
+            <span class="n">gs2</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">gs2</span><span class="p">,</span>
+            <span class="n">mirror</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">mirror</span><span class="p">,</span>
+            <span class="n">rotate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">rotate</span><span class="p">,</span>
+            <span class="n">brightness</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">brightness</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pacer</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">pace</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">seconds</span><span class="p">,</span> <span class="n">late</span><span class="o">=</span><span class="s2">"skip"</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">pacer</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">roi</span><span class="o">.</span><span class="n">poll</span><span class="p">():</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">roi</span><span class="o">.</span><span class="n">paused</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">video</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">frame</span> <span class="o">=</span> <span class="n">synthetic_frame</span><span class="p">(</span><span class="n">tick</span><span class="o">.</span><span class="n">index</span> <span class="o">/</span> <span class="n">fps</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">frame</span> <span class="o">=</span> <span class="n">next_frame</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">tick</span><span class="o">.</span><span class="n">skipped</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">once</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="n">dev</span><span class="o">.</span><span class="n">stream_image</span><span class="p">(</span>
+                    <span class="n">roi</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span>
+                    <span class="n">gray_level</span><span class="o">=</span><span class="n">roi</span><span class="o">.</span><span class="n">gray_level</span><span class="p">,</span>
+                    <span class="n">duty_cycle</span><span class="o">=</span><span class="n">roi</span><span class="o">.</span><span class="n">brightness</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">roi</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">video</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">video</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fps</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">args</span><span class="o">.</span><span class="n">speed</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> frames/s: </span><span class="si">{</span><span class="n">pacer</span><span class="o">.</span><span class="n">report</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="cameraroi_viewpy"><code>camera/roi_view.py</code><a class="headerlink" href="#cameraroi_viewpy" title="Permanent link">&para;</a></h3>
+<p>The box and the preview window shared by both camera examples, with the
+mouse and keyboard controls in its docstring.</p>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Shared helper for the camera examples: a box you move over the video.</span>
+
+<span class="sd">Not an example on its own; ``webcam.py`` and ``movie.py`` import it. The box</span>
+<span class="sd">keeps the arena's aspect ratio (5:1 on a 2x10 arena). What is inside it is</span>
+<span class="sd">shrunk to the arena's pixel size, optionally rotated around the arena, and</span>
+<span class="sd">shown, as the panels will show it, in a second window.</span>
+
+<span class="sd">Controls (click the "source" window first so it has the keyboard):</span>
+
+<span class="sd">| Input | Action |</span>
+<span class="sd">|---|---|</span>
+<span class="sd">| drag inside the box | move it |</span>
+<span class="sd">| click outside the box | centre it there (keep holding to drag) |</span>
+<span class="sd">| drag a corner | resize it (the opposite corner stays put) |</span>
+<span class="sd">| mouse wheel, ``+`` / ``-`` | resize about the centre |</span>
+<span class="sd">| arrow keys, ``w`` ``a`` ``s`` ``d`` | move the box (2% of the picture height) |</span>
+<span class="sd">| ``r`` | reset to the largest centred box |</span>
+<span class="sd">| ``m`` | mirror left-right |</span>
+<span class="sd">| ``g`` | switch GS16 / GS2 (dithered) |</span>
+<span class="sd">| ``c`` | contrast stretch on/off |</span>
+<span class="sd">| ``[`` / ``]`` | rotate around the arena (5 columns, 9 degrees on a 2x10 arena) |</span>
+<span class="sd">| ``,`` / ``.`` | dim / brighten the panels (duty cycle 1-255, x1.25 per press) |</span>
+<span class="sd">| space | pause (movie.py) |</span>
+<span class="sd">| ``q`` or Esc | quit |</span>
+
+<span class="sd">Requires: opencv-python (``uv sync --extra camera``).</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">arena_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">GrayLevel</span>
+
+<span class="n">SOURCE_WINDOW</span> <span class="o">=</span> <span class="s2">"source"</span>
+<span class="n">ARENA_WINDOW</span> <span class="o">=</span> <span class="s2">"arena"</span>
+<span class="n">MAX_DISPLAY_WIDTH</span> <span class="o">=</span> <span class="mi">960</span>  <span class="c1"># larger videos are shown scaled down</span>
+<span class="n">CORNER_GRAB</span> <span class="o">=</span> <span class="mi">12</span>  <span class="c1"># display pixels around a corner that start a resize</span>
+<span class="n">MIN_BOX_WIDTH</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># source pixels</span>
+<span class="n">ROTATE_STEP_COLUMNS</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># arena columns per [ or ] key press</span>
+<span class="n">BOX_COLOR</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># BGR</span>
+<span class="n">CONTROLS</span> <span class="o">=</span> <span class="s2">"""</span><span class="se">\</span>
+<span class="s2">In the source window: drag the box (or use the arrow keys or w a s d) to move</span>
+<span class="s2">it; drag a corner (or use the mouse wheel or + / -) to resize it.</span>
+<span class="s2">Keys: r reset, m mirror, g GS16/GS2, c contrast, [ ] rotate,</span>
+<span class="s2">, . dim/brighten, space pause, q quit."""</span>
+<span class="n">MOVE_STEP</span> <span class="o">=</span> <span class="mf">0.02</span>  <span class="c1"># fraction of the picture height per key press</span>
+<span class="c1"># Arrow-key codes from cv2.waitKeyEx(): Linux, Windows, macOS.</span>
+<span class="n">_ARROWS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">**</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">((</span><span class="mi">65361</span><span class="p">,</span> <span class="mi">2424832</span><span class="p">,</span> <span class="mi">63234</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>  <span class="c1"># left</span>
+    <span class="o">**</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">((</span><span class="mi">65362</span><span class="p">,</span> <span class="mi">2490368</span><span class="p">,</span> <span class="mi">63232</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>  <span class="c1"># up</span>
+    <span class="o">**</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">((</span><span class="mi">65363</span><span class="p">,</span> <span class="mi">2555904</span><span class="p">,</span> <span class="mi">63235</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>  <span class="c1"># right</span>
+    <span class="o">**</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">((</span><span class="mi">65364</span><span class="p">,</span> <span class="mi">2621440</span><span class="p">,</span> <span class="mi">63233</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>  <span class="c1"># down</span>
+<span class="p">}</span>
+<span class="c1"># 4x4 Bayer matrix: thresholds for ordered dithering in GS2.</span>
+<span class="n">_BAYER4</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span> <span class="o">+</span> <span class="mf">0.5</span>
+<span class="p">)</span> <span class="o">/</span> <span class="mi">16</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_arena_image</span><span class="p">(</span>
+    <span class="n">crop</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">gs2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">stretch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Turn a BGR crop into an arena image: 0-15 (GS16) or dithered 0/1 (GS2)."""</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">shape</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">crop</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span> <span class="k">if</span> <span class="n">crop</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">crop</span>
+    <span class="n">small</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">gray</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_AREA</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stretch</span><span class="p">:</span>  <span class="c1"># use the full brightness range: 16 levels go a long way</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">small</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">98</span><span class="p">))</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="p">(</span><span class="n">small</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="n">small</span> <span class="o">/</span> <span class="mi">255</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gs2</span><span class="p">:</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">_BAYER4</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span> <span class="o">//</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))[:</span><span class="n">h</span><span class="p">,</span> <span class="p">:</span><span class="n">w</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">level</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">level</span> <span class="o">*</span> <span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">synthetic_frame</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A moving test picture (BGR) standing in for a camera or a movie."""</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">size</span>
+    <span class="n">bars</span> <span class="o">=</span> <span class="p">(</span><span class="mi">127</span> <span class="o">+</span> <span class="mi">120</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="mi">80</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
+    <span class="p">)</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mi">1</span><span class="p">))[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">centre</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">t</span><span class="p">)))</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">centre</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RoiSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A box of fixed aspect ratio over the video, moved with the mouse.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        arena_shape: ``(height, width)`` of the arena image, e.g.</span>
+<span class="sd">            ``dev.arena.pixel_shape``.</span>
+<span class="sd">        gui: Show the windows and take mouse/keyboard input.</span>
+<span class="sd">        gs2: Start in GS2 (dithered on/off) instead of GS16.</span>
+<span class="sd">        mirror: Flip the video left-right (natural for a webcam facing you).</span>
+<span class="sd">        rotate: Move the image's centre around the arena by this many degrees</span>
+<span class="sd">            (0-360; 360 is the full image width, back to the start).</span>
+<span class="sd">        brightness: Panel brightness (duty cycle) 1-255; 128 is 50 %.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">arena_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">gui</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">gs2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">mirror</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">rotate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">brightness</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set up the box (sized on the first frame) and the windows."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arena_shape</span> <span class="o">=</span> <span class="n">arena_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span> <span class="o">=</span> <span class="n">arena_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">arena_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># width / height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="o">=</span> <span class="n">gui</span><span class="p">,</span> <span class="n">gs2</span><span class="p">,</span> <span class="n">mirror</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">=</span> <span class="n">rotate</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">brightness</span> <span class="o">&lt;=</span> <span class="mi">255</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"brightness must be 1-255, got </span><span class="si">{</span><span class="n">brightness</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brightness</span> <span class="o">=</span> <span class="n">brightness</span>
+<span class="w">        </span><span class="sd">"""Duty cycle to send the images with (``dev.stream_image(duty_cycle=)``)."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stretch</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="c1"># x, y, width in source pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># display pixels per source pixel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fps</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">gui</span><span class="p">:</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">namedWindow</span><span class="p">(</span><span class="n">SOURCE_WINDOW</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">WINDOW_AUTOSIZE</span><span class="p">)</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">namedWindow</span><span class="p">(</span><span class="n">ARENA_WINDOW</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">WINDOW_AUTOSIZE</span><span class="p">)</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">setMouseCallback</span><span class="p">(</span><span class="n">SOURCE_WINDOW</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_mouse</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">CONTROLS</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gray_level</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GrayLevel</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Gray level to send the images with."""</span>
+        <span class="k">return</span> <span class="n">GrayLevel</span><span class="o">.</span><span class="n">GS2</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs2</span> <span class="k">else</span> <span class="n">GrayLevel</span><span class="o">.</span><span class="n">GS16</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Crop the box from a BGR frame and return the arena image (and show it)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span><span class="p">:</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">frame</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">fh</span><span class="p">,</span> <span class="n">fw</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">fw</span><span class="p">,</span> <span class="n">fh</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">fw</span><span class="p">,</span> <span class="n">fh</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">MAX_DISPLAY_WIDTH</span> <span class="o">/</span> <span class="n">fw</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">)</span>
+        <span class="n">crop</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">y</span> <span class="p">:</span> <span class="n">y</span> <span class="o">+</span> <span class="nb">round</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="p">),</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">]</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">to_arena_image</span><span class="p">(</span>
+            <span class="n">crop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arena_shape</span><span class="p">,</span> <span class="n">gs2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gs2</span><span class="p">,</span> <span class="n">stretch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stretch</span>
+        <span class="p">)</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">%</span> <span class="mi">360</span> <span class="o">/</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># columns wrap around the arena</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fps</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fps</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Handle key presses; False once the user quits (always True with no GUI)."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKeyEx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">_ARROWS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="o">*</span><span class="n">_ARROWS</span><span class="p">[</span><span class="n">code</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">code</span> <span class="o">&amp;</span> <span class="mh">0xFF</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="s2">"q"</span><span class="p">),</span> <span class="mi">27</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"r"</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">,</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"m"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"mirror"</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"g"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"gs2"</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs2</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"c"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"stretch"</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stretch</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">","</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">1.25</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">(</span><span class="mf">1.25</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"["</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_turn</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"]"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_turn</span><span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">" "</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"paused"</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">paused</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"+"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zoom</span><span class="p">(</span><span class="mf">1.1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"="</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zoom</span><span class="p">(</span><span class="mf">1.1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"-"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zoom</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">1.1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"w"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"a"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"s"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="nb">ord</span><span class="p">(</span><span class="s2">"d"</span><span class="p">):</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
+            <span class="n">actions</span><span class="p">[</span><span class="n">key</span><span class="p">]()</span>
+        <span class="c1"># Closing the window with its title-bar button also quits.</span>
+        <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getWindowProperty</span><span class="p">(</span><span class="n">SOURCE_WINDOW</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">WND_PROP_VISIBLE</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Close the windows."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+
+    <span class="c1"># -- the box ------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The largest box that fits, centred."""</span>
+        <span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="p">((</span><span class="n">fw</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">fh</span> <span class="o">-</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set the box, limiting its size and keeping it inside the frame."""</span>
+        <span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">MIN_BOX_WIDTH</span><span class="p">),</span> <span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="p">)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">fw</span> <span class="o">-</span> <span class="n">w</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">fh</span> <span class="o">-</span> <span class="n">h</span><span class="p">),</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dy</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">MOVE_STEP</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brightness</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># always move by at least one at the low end</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brightness</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="n">step</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">255</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_turn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">360</span> <span class="o">*</span> <span class="n">ROTATE_STEP_COLUMNS</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">arena_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">+</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span> <span class="o">%</span> <span class="mi">360</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span>
+        <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_size</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="n">MIN_BOX_WIDTH</span><span class="p">),</span> <span class="n">fw</span><span class="p">,</span> <span class="n">fh</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">cx</span> <span class="o">-</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cy</span> <span class="o">-</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_mouse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_param</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">y</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>  <span class="c1"># source pixels</span>
+        <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span>
+        <span class="n">bh</span> <span class="o">=</span> <span class="n">bw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="n">cv2</span><span class="o">.</span><span class="n">EVENT_LBUTTONDOWN</span><span class="p">:</span>
+            <span class="n">corners</span> <span class="o">=</span> <span class="p">[(</span><span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="p">(</span><span class="n">bx</span> <span class="o">+</span> <span class="n">bw</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="p">(</span><span class="n">bx</span><span class="p">,</span> <span class="n">by</span> <span class="o">+</span> <span class="n">bh</span><span class="p">),</span> <span class="p">(</span><span class="n">bx</span> <span class="o">+</span> <span class="n">bw</span><span class="p">,</span> <span class="n">by</span> <span class="o">+</span> <span class="n">bh</span><span class="p">)]</span>
+            <span class="n">grab</span> <span class="o">=</span> <span class="n">CORNER_GRAB</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">corners</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sx</span> <span class="o">-</span> <span class="n">cx</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">grab</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sy</span> <span class="o">-</span> <span class="n">cy</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">grab</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"resize"</span><span class="p">,</span> <span class="o">*</span><span class="n">corners</span><span class="p">[</span><span class="mi">3</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>  <span class="c1"># anchor: opposite</span>
+                    <span class="k">return</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">bx</span> <span class="o">&lt;=</span> <span class="n">sx</span> <span class="o">&lt;=</span> <span class="n">bx</span> <span class="o">+</span> <span class="n">bw</span> <span class="ow">and</span> <span class="n">by</span> <span class="o">&lt;=</span> <span class="n">sy</span> <span class="o">&lt;=</span> <span class="n">by</span> <span class="o">+</span> <span class="n">bh</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">sx</span> <span class="o">-</span> <span class="n">bw</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sy</span> <span class="o">-</span> <span class="n">bh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+                <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"move"</span><span class="p">,</span> <span class="n">sx</span> <span class="o">-</span> <span class="n">bx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">-</span> <span class="n">by</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">cv2</span><span class="o">.</span><span class="n">EVENT_MOUSEMOVE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kind</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span>
+            <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"move"</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">sx</span> <span class="o">-</span> <span class="n">a</span><span class="p">,</span> <span class="n">sy</span> <span class="o">-</span> <span class="n">b</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># resize from anchor (a, b) towards the pointer</span>
+                <span class="c1"># Size from the pointer's offset projected on the box's</span>
+                <span class="c1"># diagonal, so dragging mostly sideways resizes a wide box.</span>
+                <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sx</span> <span class="o">-</span> <span class="n">a</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sy</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span> <span class="o">+</span> <span class="n">dy</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aspect</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">MIN_BOX_WIDTH</span><span class="p">)</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">a</span> <span class="k">if</span> <span class="n">sx</span> <span class="o">&gt;=</span> <span class="n">a</span> <span class="k">else</span> <span class="n">a</span> <span class="o">-</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span> <span class="k">if</span> <span class="n">sy</span> <span class="o">&gt;=</span> <span class="n">b</span> <span class="k">else</span> <span class="n">b</span> <span class="o">-</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">cv2</span><span class="o">.</span><span class="n">EVENT_LBUTTONUP</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">cv2</span><span class="o">.</span><span class="n">EVENT_MOUSEWHEEL</span><span class="p">:</span>
+            <span class="c1"># The wheel step is the signed top 16 bits of flags (OpenCV 5 has</span>
+            <span class="c1"># no getMouseWheelDelta); positive means away from the user.</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFFFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_zoom</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">1.1</span> <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;=</span> <span class="mh">0x8000</span> <span class="k">else</span> <span class="mf">1.1</span><span class="p">)</span>
+
+    <span class="c1"># -- display ------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_AREA</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">s</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">s</span><span class="p">))</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">((</span><span class="n">y</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">view</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">BOX_COLOR</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">"  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">"GS2"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs2</span> <span class="k">else</span> <span class="s2">"GS16"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"rotate </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rotate</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">360</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> deg"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"brightness </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">brightness</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"stretch </span><span class="si">{</span><span class="s1">'on'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">stretch</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'off'</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="o">*</span><span class="p">([</span><span class="s2">"PAUSED"</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">paused</span> <span class="k">else</span> <span class="p">[]),</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_fps</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> fps"</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span> <span class="ow">in</span> <span class="p">(((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span> <span class="p">((</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span>
+                <span class="n">view</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span>
+            <span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">SOURCE_WINDOW</span><span class="p">,</span> <span class="n">view</span><span class="p">)</span>
+        <span class="c1"># The arena as green LEDs, enlarged with square pixels.</span>
+        <span class="n">zoom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">800</span> <span class="o">//</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs2</span> <span class="k">else</span> <span class="mi">15</span>
+        <span class="n">green</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">brightness</span> <span class="o">//</span> <span class="n">levels</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">green</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">green</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">zoom</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">zoom</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span>
+        <span class="p">)</span>
+        <span class="n">dark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">green</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ARENA_WINDOW</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">merge</span><span class="p">([</span><span class="n">dark</span><span class="p">,</span> <span class="n">green</span><span class="p">,</span> <span class="n">dark</span><span class="p">]))</span>
 </code></pre></div>
 <h2 id="notebook">Notebook<a class="headerlink" href="#notebook" title="Permanent link">&para;</a></h2>
 <p><code>examples/notebooks/walkthrough.ipynb</code> is a Jupyter tour of the main features
