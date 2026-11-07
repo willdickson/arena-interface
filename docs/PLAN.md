@@ -31,6 +31,11 @@ Work one milestone at a time. Tick items off as they are completed.
 - [x] M8. Docs: getting started, user guide, protocol reference, API reference,
       examples page; `mkdocs build --strict` passes
 - [x] M9. Optional: hardware tests (`-m hardware`), README polish, packaging check
+- [x] Camera examples (`examples/camera/`, OpenCV as the optional `camera`
+      extra): webcam and movie (.mp4/.avi/.gif) streaming with a mouse-driven
+      ROI box, `--rotate` and `[`/`]` keys. Verified on hardware 2026-11-06
+      (Logitech C310 in the VM: MJPG needed, raw YUYV frames arrived with
+      bands out of order).
 
 ## Status (updated 2026-11-04)
 

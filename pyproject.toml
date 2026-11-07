@@ -17,6 +17,11 @@ Homepage = "https://github.com/willdickson/arena-interface"
 Documentation = "https://willdickson.github.io/arena-interface/"
 Repository = "https://github.com/willdickson/arena-interface"
 
+[project.optional-dependencies]
+camera = [
+    "opencv-python>=4.8",
+]
+
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
@@ -30,6 +35,7 @@ dev = [
     "mypy>=2.4.1",
     "nbclient>=0.11.0",
     "nbformat>=5.11.1",
+    "opencv-python>=4.8",
     "pytest>=9.2.0",
     "ruff>=0.17.3",
     "types-pyserial>=3.5.0.20261030",

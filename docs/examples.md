@@ -224,6 +224,41 @@ Live plot of the analog inputs with matplotlib.
 --8<-- "examples/plotting/live_plot.py"
 ```
 
+### `camera/webcam.py`
+
+Stream a webcam to the arena in real time. A box with the arena's aspect
+ratio, moved and resized with the mouse, picks the part of the picture that
+is shrunk to the arena's pixels and streamed. GS16 with contrast stretching by
+default; `--gs2` uses dithered on/off pixels. `--rotate DEG` (0-360) moves
+the picture's centre around the arena. Needs OpenCV
+(`uv sync --extra camera`); `--simulate` uses a moving test picture.
+
+```python
+--8<-- "examples/camera/webcam.py"
+```
+
+### `camera/movie.py`
+
+The same for a movie file (`.mp4`, `.avi`, `.gif`, ...), played at its own frame rate
+with `dev.pace()`.
+
+```bash
+uv run python examples/camera/movie.py clip.mp4
+```
+
+```python
+--8<-- "examples/camera/movie.py"
+```
+
+### `camera/roi_view.py`
+
+The box and the preview window shared by both camera examples, with the
+mouse and keyboard controls in its docstring.
+
+```python
+--8<-- "examples/camera/roi_view.py"
+```
+
 ## Notebook
 
 `examples/notebooks/walkthrough.ipynb` is a Jupyter tour of the main features

@@ -58,6 +58,8 @@ with `--simulate`.
 | `24_host_playback.py` | Play frame sequences at a fixed rate, paced by the computer |
 | `25_live_pacing.py` | Closed loop from the computer: choose each frame live at a fixed rate |
 | `plotting/live_plot.py` | Live plot of the analog inputs with matplotlib |
+| `camera/webcam.py` | Stream a webcam to the arena in real time, through a box you move |
+| `camera/movie.py` | Play a movie file on the arena through a box you move |
 
 ## Notebook
 
@@ -66,3 +68,7 @@ with `--simulate`.
 | `notebooks/walkthrough.ipynb` | A tour of the main features against the simulator |
 
 `plotting/live_plot.py` needs matplotlib; the notebook needs Jupyter.
+The `camera/` examples need OpenCV (`uv sync --extra camera`, or
+`pip install "arena-interface[camera]"`) and share `camera/roi_view.py`, which
+draws the box and lists the mouse and keyboard controls. With `--simulate`
+they use a moving test picture instead of a camera or movie.

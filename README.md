@@ -54,8 +54,8 @@ see [Getting started](https://willdickson.github.io/arena-interface/getting-star
 
 ## Examples
 
-`examples/` has 25 runnable scripts, a live matplotlib plot and a Jupyter
-notebook. Each accepts `--port` (default: auto-detect) and `--simulate`:
+`examples/` has 25 runnable scripts, a live matplotlib plot, webcam and
+movie streaming with OpenCV, and a Jupyter notebook. Each accepts `--port` (default: auto-detect) and `--simulate`:
 
 ```bash
 uv run python examples/01_connect.py --simulate    # no hardware needed

@@ -37,7 +37,8 @@ with Device.open() as dev:                      # finds the controller by USB id
 - [Getting started](getting-started.md): install, connect, first commands.
 - [User guide](user-guide.md): how the controller works and how to use each
   part of the library.
-- [Examples](examples.md): 25 runnable scripts, a live plot and a notebook.
+- [Examples](examples.md): 25 runnable scripts, a live plot, webcam and movie
+  streaming, and a notebook.
 - [Protocol reference](PROTOCOL.md): the wire protocol, for the curious and
   for firmware work.
 - [API reference](api.md): every class and function.
@@ -47,4 +48,5 @@ with Device.open() as dev:                      # finds the controller by USB id
 - Python 3.11 or newer on Linux, macOS or Windows.
 - [pyserial](https://pyserial.readthedocs.io/) and [numpy](https://numpy.org/),
   installed automatically.
-- Optional: matplotlib (plotting example), Jupyter (notebook example).
+- Optional: matplotlib (plotting example), OpenCV (webcam and movie examples,
+  the `camera` extra), Jupyter (notebook example).
