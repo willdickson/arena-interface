@@ -2764,9 +2764,10 @@ raise the refresh rate, and check with <code>play_frames(..., verify=True)</code
   name and an arena id (written to the <code>.pat</code> header <code>arena_id</code> field; the
   controller ignores it). The eight G6 arenas from the JS registry are built in
   as presets: 1 <code>G6_2x10</code>, 2 <code>G6_2x8of10</code>, 3 <code>G6_3x12of18</code>, 4 <code>G6_3x16_full</code>,
-  5 <code>G6_3x10</code>, 6 <code>G6_4x10</code>, 7 <code>G6_1x12of18</code>, 8 <code>G6_3x10of14</code>. A maDisplayTools
-  YAML arena registry can be loaded optionally to add or override presets; this
-  needs PyYAML, provided as an optional extra (<code>arena-interface[yaml]</code>).</p>
+  5 <code>G6_3x10</code>, 6 <code>G6_4x10</code>, 7 <code>G6_1x12of18</code>, 8 <code>G6_3x10of14</code>. Other arenas
+  are described directly (<code>Arena(rows, cols, installed_columns=..., arena_id=...)</code>).
+  Loading the maDisplayTools YAML arena registry was planned as an option but
+  dropped (2026-11-09); new arenas are added to the built-in list instead.</p>
 </li>
 <li><strong>Patterns are full-grid.</strong> The panel mask is always "all panels"; columns
   that are not installed are left blank. This matches the JS tools

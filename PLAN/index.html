@@ -453,8 +453,8 @@
 <li>[x] M5a. Patterns from pixel arrays: <code>Arena</code> presets, <code>.pat</code> encode/decode,
       stream frames, <code>origin="upper"|"lower"</code>, rig → firmware-grid mapping;
       numpy required (was an optional extra until 2026-11-06).</li>
-<li>[ ] M5a-yaml. Optional maDisplayTools YAML arena registry (PyYAML extra).
-        Waiting for sample YAML files from the user.</li>
+<li>[-] M5a-yaml. Optional maDisplayTools YAML arena registry (PyYAML extra).
+        Dropped 2026-11-09: new arenas are added to the built-in presets.</li>
 <li>[x] M6. Streaming / notifications: telemetry event stream
       (<code>device.telemetry.events()</code>), polling sampler (<code>device.sample()</code>),
       wall-clock timestamps; telemetry moves out of <code>diagnostics</code>.</li>
@@ -492,9 +492,9 @@
   all work. M9 hardware suite (<code>tests/test_hardware.py</code>, <code>-m hardware</code>):
   14 passed. It found a second telemetry timing bug (out-of-order CMD
   records), now fixed and reproduced in the simulator.</li>
-<li>Reset/reconnect hardware test (<code>ARENA_ALLOW_RESET=1</code>) not run: in this VM
-  the USB passthrough is pinned to the bus/device address, so a reset would
-  likely leave the controller on the host. Run it on a machine with native USB.</li>
+<li>Reset/reconnect hardware test (<code>ARENA_ALLOW_RESET=1</code>): not run in the
+  development VM (its USB passthrough is pinned to the bus/device address).
+  Passed on native USB (Linux, Python 3.14) on 2026-11-09, run by the user.</li>
 <li>M9 done 2026-11-04: README rewritten; <code>uv build</code> checked (wheel ships
   <code>py.typed</code>, sdist excludes <code>reference/</code>); wheel installed and used on a
   clean Python 3.10, with and without the numpy extra; full test suite and
@@ -502,9 +502,9 @@
 <li>Minimum Python raised to 3.11 (2026-11-05; 3.10 is end of life, and 3.11's
   high-resolution sleep on Windows simplifies M6b playback timing).</li>
 <li>License MIT, author Will Dickson <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#119;&#98;&#100;&#64;&#99;&#97;&#108;&#116;&#101;&#99;&#104;&#46;&#101;&#100;&#117;">&#119;&#98;&#100;&#64;&#99;&#97;&#108;&#116;&#101;&#99;&#104;&#46;&#101;&#100;&#117;</a> (LICENSE file and package
-  metadata, 2026-11-04). No git repository yet, by the user's choice.</li>
-<li>Later: M5a-yaml; a Windows run of the hardware suite; the reset test on native USB.</li>
-<li>M5a-yaml is waiting for sample maDisplayTools YAML files.</li>
+  metadata, 2026-11-04). Repository on GitHub since 2026-11-06
+  (github.com/willdickson/arena-interface); docs on GitHub Pages.</li>
+<li>Later: a Windows run of the hardware suite. (M5a-yaml dropped 2026-11-09.)</li>
 <li>M6b done 2026-11-05: <code>playback.py</code> (play_frames/play_images, start_*,
   pace, PlaybackReport, PerformanceWarning), examples 24 and 25, user guide
   section; hardware playback tests pass (200 fps, no skips, display verified).
