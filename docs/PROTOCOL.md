@@ -592,9 +592,10 @@ Behaviour the library adds on top of the wire protocol, as agreed in review.
   name and an arena id (written to the `.pat` header `arena_id` field; the
   controller ignores it). The eight G6 arenas from the JS registry are built in
   as presets: 1 `G6_2x10`, 2 `G6_2x8of10`, 3 `G6_3x12of18`, 4 `G6_3x16_full`,
-  5 `G6_3x10`, 6 `G6_4x10`, 7 `G6_1x12of18`, 8 `G6_3x10of14`. A maDisplayTools
-  YAML arena registry can be loaded optionally to add or override presets; this
-  needs PyYAML, provided as an optional extra (`arena-interface[yaml]`).
+  5 `G6_3x10`, 6 `G6_4x10`, 7 `G6_1x12of18`, 8 `G6_3x10of14`. Other arenas
+  are described directly (`Arena(rows, cols, installed_columns=..., arena_id=...)`).
+  Loading the maDisplayTools YAML arena registry was planned as an option but
+  dropped (2026-11-09); new arenas are added to the built-in list instead.
 - **Patterns are full-grid.** The panel mask is always "all panels"; columns
   that are not installed are left blank. This matches the JS tools
   (`pattern-set.js`: the controller cannot play partial-arena patterns).

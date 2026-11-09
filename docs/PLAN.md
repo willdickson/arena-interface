@@ -16,8 +16,8 @@ Work one milestone at a time. Tick items off as they are completed.
 - [x] M5a. Patterns from pixel arrays: `Arena` presets, `.pat` encode/decode,
       stream frames, `origin="upper"|"lower"`, rig → firmware-grid mapping;
       numpy required (was an optional extra until 2026-11-06).
-  - [ ] M5a-yaml. Optional maDisplayTools YAML arena registry (PyYAML extra).
-        Waiting for sample YAML files from the user.
+  - [-] M5a-yaml. Optional maDisplayTools YAML arena registry (PyYAML extra).
+        Dropped 2026-11-09: new arenas are added to the built-in presets.
 - [x] M6. Streaming / notifications: telemetry event stream
       (`device.telemetry.events()`), polling sampler (`device.sample()`),
       wall-clock timestamps; telemetry moves out of `diagnostics`.
@@ -67,8 +67,7 @@ Work one milestone at a time. Tick items off as they are completed.
 - License MIT, author Will Dickson <wbd@caltech.edu> (LICENSE file and package
   metadata, 2026-11-04). Repository on GitHub since 2026-11-06
   (github.com/willdickson/arena-interface); docs on GitHub Pages.
-- Later: M5a-yaml; a Windows run of the hardware suite.
-- M5a-yaml is waiting for sample maDisplayTools YAML files.
+- Later: a Windows run of the hardware suite. (M5a-yaml dropped 2026-11-09.)
 - M6b done 2026-11-05: `playback.py` (play_frames/play_images, start_*,
   pace, PlaybackReport, PerformanceWarning), examples 24 and 25, user guide
   section; hardware playback tests pass (200 fps, no skips, display verified).
