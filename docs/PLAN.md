@@ -55,9 +55,9 @@ Work one milestone at a time. Tick items off as they are completed.
   all work. M9 hardware suite (`tests/test_hardware.py`, `-m hardware`):
   14 passed. It found a second telemetry timing bug (out-of-order CMD
   records), now fixed and reproduced in the simulator.
-- Reset/reconnect hardware test (`ARENA_ALLOW_RESET=1`) not run: in this VM
-  the USB passthrough is pinned to the bus/device address, so a reset would
-  likely leave the controller on the host. Run it on a machine with native USB.
+- Reset/reconnect hardware test (`ARENA_ALLOW_RESET=1`): not run in the
+  development VM (its USB passthrough is pinned to the bus/device address).
+  Passed on native USB (Linux, Python 3.14) on 2026-11-09, run by the user.
 - M9 done 2026-11-04: README rewritten; `uv build` checked (wheel ships
   `py.typed`, sdist excludes `reference/`); wheel installed and used on a
   clean Python 3.10, with and without the numpy extra; full test suite and
@@ -65,8 +65,9 @@ Work one milestone at a time. Tick items off as they are completed.
 - Minimum Python raised to 3.11 (2026-11-05; 3.10 is end of life, and 3.11's
   high-resolution sleep on Windows simplifies M6b playback timing).
 - License MIT, author Will Dickson <wbd@caltech.edu> (LICENSE file and package
-  metadata, 2026-11-04). No git repository yet, by the user's choice.
-- Later: M5a-yaml; a Windows run of the hardware suite; the reset test on native USB.
+  metadata, 2026-11-04). Repository on GitHub since 2026-11-06
+  (github.com/willdickson/arena-interface); docs on GitHub Pages.
+- Later: M5a-yaml; a Windows run of the hardware suite.
 - M5a-yaml is waiting for sample maDisplayTools YAML files.
 - M6b done 2026-11-05: `playback.py` (play_frames/play_images, start_*,
   pace, PlaybackReport, PerformanceWarning), examples 24 and 25, user guide
