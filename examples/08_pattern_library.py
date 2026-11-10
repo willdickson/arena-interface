@@ -1,8 +1,8 @@
 """Manage the patterns on the controller's SD card.
 
 Shows: iterating device.patterns, info(), upload(), download(), rename(),
-delete() and archive(). The example uploads its own pattern and removes it
-again, so the card ends as it started.
+find() by name with the name cache on, delete() and archive(). The example
+uploads its own pattern and removes it again, so the card ends as it started.
 Requires: a controller with an SD card (or --simulate). The display is
 stopped first, because transfers need it off.
 """
@@ -18,7 +18,8 @@ def main() -> None:
     parser.add_argument("--simulate", action="store_true", help="use fake device")
     args = parser.parse_args()
 
-    with Device.open(args.port, simulate=args.simulate) as dev:
+    # cache_patterns: keep the names, so finding a pattern by name is fast.
+    with Device.open(args.port, simulate=args.simulate, cache_patterns=True) as dev:
         dev.stop()
         for entry in dev.patterns:
             info = dev.patterns.info(entry.pattern_id)
@@ -40,6 +41,8 @@ def main() -> None:
 
         pid = dev.patterns.rename(pid, "zz_example_08_renamed.pat")
         print(f"Renamed; id is now {pid}: {dev.patterns.name(pid)}")
+        found = dev.patterns.find("ZZ_example_08_renamed")  # case, .pat optional
+        print(f"Found by name: id {found}")
 
         dev.patterns.delete(pid)
         print(f"Deleted; {len(dev.patterns)} patterns remain")

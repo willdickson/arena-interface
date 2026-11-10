@@ -601,8 +601,16 @@ Behaviour the library adds on top of the wire protocol, as agreed in review.
   (decided 2026-11-09). Names match case-insensitively with `.pat` optional,
   as FAT file names do; an unknown name raises `KeyError`. The firmware only
   loads by id, so a name is resolved by listing the card
-  (GET_PATTERN_FILENAME per pattern) on every call, with no cache. Ids shift
-  when files are added, renamed or deleted, so names are the stable choice.
+  (GET_PATTERN_FILENAME per pattern). Ids shift when files are added, renamed
+  or deleted, so names are the stable choice.
+- **Optional pattern-name cache** (decided 2026-11-09, off by default):
+  `Device.open(cache_patterns=True)` or `dev.patterns.cache = True` reads the
+  names once. Each lookup then checks the card's name at the cached id with
+  one GET_PATTERN_FILENAME, re-reading the list if the check fails or the name
+  is not cached, so changes made outside the library cannot select the wrong
+  pattern. Library changes (upload, rename, delete, format) and reconnects
+  re-read the list rather than predicting the firmware's sort order. Listings
+  always read the card.
 - **Patterns are full-grid.** The panel mask is always "all panels"; columns
   that are not installed are left blank. This matches the JS tools
   (`pattern-set.js`: the controller cannot play partial-arena patterns).

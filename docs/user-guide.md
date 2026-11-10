@@ -89,8 +89,23 @@ Ids are positions in the alphabetical list of file names, so they **change**
 when patterns are uploaded, renamed or deleted; a name keeps meaning the same
 file. The firmware loads patterns by id only, so a name costs one request per
 pattern on the card to look up (about 0.25 ms each: 11 ms for a card with 41
-patterns). That is fine before a trial; in a tight loop, look the id up once
-with `dev.patterns.find(name)`.
+patterns). That is fine before a trial. For faster lookups, turn on the
+**name cache**:
+
+```python
+dev = Device.open(cache_patterns=True)   # reads the names when connecting
+dev.patterns.cache = True                # or later: reads them now
+dev.patterns.cache = False               # back to reading the card every time
+```
+
+With the cache on, a lookup takes one request (about 0.3 ms) whatever the
+number of patterns. That request checks the card's name at the cached id, so
+even if the card was changed by another program, the wrong pattern is never
+chosen: a failed check, or a name the cache does not know, re-reads the names
+first. Uploading, renaming and deleting through `dev.patterns`, formatting the
+card and `dev.reconnect()` re-read them as well. Listing the patterns
+(`for entry in dev.patterns`) always reads the card.
+
 An unknown name raises `KeyError`, listing the patterns on the card.
 
 `duration` is timed by the controller (10 ms resolution, up to 655 s), so the

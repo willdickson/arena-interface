@@ -442,3 +442,78 @@ def test_arena_property_on_old_firmware() -> None:
         dev.arena  # noqa: B018
     with Device.open(simulate=ctrl, arena_shape=(2, 10)) as dev:
         assert dev.arena.name == "G6_2x10"
+
+
+# -- pattern-name cache -------------------------------------------------------
+
+
+@pytest.fixture
+def requests(dev: Device, monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """Count the requests the device sends (one list entry per request)."""
+    sent: list[int] = []
+    original = dev._send
+
+    def counting(req, **kwargs):  # type: ignore[no-untyped-def]
+        sent.append(1)
+        return original(req, **kwargs)
+
+    monkeypatch.setattr(dev, "_send", counting)
+    return sent
+
+
+def test_cache_off_reads_the_card_for_each_lookup(
+    dev: Device, requests: list[int]
+) -> None:
+    assert not dev.patterns.cache
+    assert dev.patterns.find("demo_gs2") == 2
+    assert len(requests) == 3  # count + two names
+
+
+def test_cache_on_makes_lookups_one_request(dev: Device, requests: list[int]) -> None:
+    dev.patterns.cache = True  # reads the names now
+    assert len(requests) == 3
+    requests.clear()
+    assert dev.patterns.find("DEMO_GS2") == 2
+    assert len(requests) == 1  # just the check of the cached id
+    dev.patterns.cache = False
+    assert not dev.patterns.cache
+
+
+def test_cache_follows_library_changes(dev: Device, requests: list[int]) -> None:
+    dev.patterns.cache = True
+    dev.patterns.upload("a_first.pat", make_test_pattern(2, 10, 3))  # ids shift
+    requests.clear()
+    assert dev.patterns.find("demo_gs2") == 3
+    assert dev.patterns.find("a_first") == 1
+    assert len(requests) == 2
+    dev.patterns.rename(1, "z_last.pat")
+    assert dev.patterns.find("z_last") == 3
+    dev.patterns.delete(3)
+    assert dev.patterns.find("z_last") is None
+    dev.patterns.format_card()
+    assert dev.patterns.find("demo_gs2") is None
+
+
+def test_cache_survives_changes_made_elsewhere(
+    dev: Device, ctrl: FakeController
+) -> None:
+    dev.patterns.cache = True
+    # Changed behind the library's back: ids of both demo patterns shift.
+    ctrl.files["a_new.pat"] = make_test_pattern(2, 10, 3)
+    assert dev.patterns.find("demo_gs2") == 3  # check fails, names re-read
+    ctrl.files["b_other.pat"] = make_test_pattern(2, 10, 4)
+    assert dev.patterns.find("b_other") == 2  # not cached: re-read
+    del ctrl.files["demo_gs2.pat"]
+    del ctrl.files["demo_gs16.pat"]
+    assert dev.patterns.find("b_other") == 2
+    dev.start_trial("a_new", frame_rate=10)
+    assert dev.frame_position.frame_count == 3
+
+
+def test_cache_from_open_and_after_reconnect(ctrl: FakeController) -> None:
+    with Device.open(simulate=ctrl, cache_patterns=True) as dev:
+        assert dev.patterns.cache
+        dev.reset()
+        ctrl.files["a_new.pat"] = make_test_pattern(2, 10, 3)
+        dev.reconnect(timeout=2)
+        assert dev.patterns._names == ["a_new.pat", "demo_gs16.pat", "demo_gs2.pat"]

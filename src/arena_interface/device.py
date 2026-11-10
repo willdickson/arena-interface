@@ -32,6 +32,7 @@ from ._crc import crc32
 from .arena import PRESETS, Arena
 from .discovery import PortInfo, find_ports
 from .errors import (
+    CommandError,
     DeviceDisconnected,
     DeviceError,
     DeviceNotFound,
@@ -165,6 +166,7 @@ class Device:
         probe: bool = True,
         all_off_on_close: bool = True,
         arena_shape: tuple[int, int] | None = None,
+        cache_patterns: bool = False,
     ) -> Device:
         """Connect to a controller.
 
@@ -180,6 +182,9 @@ class Device:
             all_off_on_close: Blank the arena when the connection is closed.
             arena_shape: ``(rows, cols)`` of the firmware build, for firmware
                 too old to report it.
+            cache_patterns: Read the SD card's pattern names now and keep them,
+                so choosing a pattern by name is fast (see
+                [`PatternLibrary.cache`][arena_interface.device.PatternLibrary.cache]).
 
         Returns:
             The connected device.
@@ -199,19 +204,27 @@ class Device:
             controller = (
                 simulate if isinstance(simulate, FakeController) else FakeController()
             )
-            return cls(
+            dev = cls(
                 Transport(FakePort(controller)),
                 all_off_on_close=all_off_on_close,
                 arena_shape=arena_shape,
                 simulator=controller,
             )
-        if port is None:
-            port = cls._detect(probe)
-        return cls(
-            Transport.open(port),
-            all_off_on_close=all_off_on_close,
-            arena_shape=arena_shape,
-        )
+        else:
+            if port is None:
+                port = cls._detect(probe)
+            dev = cls(
+                Transport.open(port),
+                all_off_on_close=all_off_on_close,
+                arena_shape=arena_shape,
+            )
+        if cache_patterns:
+            try:
+                dev.patterns.cache = True
+            except BaseException:
+                dev.close()
+                raise
+        return dev
 
     @staticmethod
     def _detect(probe: bool) -> str:
@@ -363,6 +376,7 @@ class Device:
                     f"a different controller ({self.info.mac}) answered on "
                     f"{self._port_name}; expected {old_mac}"
                 )
+            self.patterns.refresh()  # the card may have changed meanwhile
 
     # -- identity ---------------------------------------------------------
 
@@ -1079,11 +1093,64 @@ class PatternLibrary:
     Downloading, uploading, formatting and archiving need the display to be
     off (call ``device.stop()`` first); otherwise the controller refuses with a
     [`CommandError`][arena_interface.errors.CommandError].
+
+    Looking a pattern up by name reads every name from the card, one request
+    per pattern. Turn on [`cache`][arena_interface.device.PatternLibrary.cache]
+    to keep the names instead.
     """
 
     def __init__(self, device: Device) -> None:
         """Bind to a device."""
         self._dev = device
+        self._names: list[str] | None = None  # cached names in id order
+
+    @property
+    def cache(self) -> bool:
+        """Keep the pattern names, so name lookups are fast (default off).
+
+        Setting it to True reads the names from the card at once; setting it
+        to False drops them, and every lookup reads the card again.
+
+        While it is on:
+
+        * a name lookup (``find`` and the ``pattern`` argument of
+          ``start_trial`` and friends) takes one request instead of one per
+          pattern on the card: the card's name at the cached id is checked,
+          so a stale cache never selects the wrong pattern. If the check
+          fails, or the name is not cached, the names are read again before
+          giving up;
+        * ``upload``, ``rename``, ``delete`` and ``format_card`` re-read the
+          names, as does ``Device.reconnect``;
+        * listing the patterns (``len``, iteration, ``entries``) still reads
+          the card.
+
+        Example:
+            >>> with Device.open(simulate=True) as dev:
+            ...     dev.patterns.cache = True       # reads the names now
+            ...     dev.start_trial("demo_gs2", frame_rate=30)
+        """
+        return self._names is not None
+
+    @cache.setter
+    def cache(self, enabled: bool) -> None:
+        with self._dev._lock:
+            if not enabled:
+                self._names = None
+            elif self._names is None:
+                self._names = self._read_names()
+
+    def refresh(self) -> None:
+        """Re-read the cached names from the card (nothing to do if the cache is off).
+
+        Only needed if the card was changed by something other than this
+        ``Device`` and you want the next lookup to skip the check.
+        """
+        with self._dev._lock:
+            if self._names is not None:
+                self._names = self._read_names()
+
+    def _read_names(self) -> list[str]:
+        return [entry.name for entry in self.entries()]
 
     def __len__(self) -> int:
         """Number of patterns on the card."""
@@ -1115,10 +1182,21 @@ class PatternLibrary:
         wanted = name.strip().lower()
         if not wanted.endswith(".pat"):
             wanted += ".pat"
-        for entry in self.entries():
-            if entry.name.lower() == wanted:
-                return entry.pattern_id
-        return None
+        with self._dev._lock:
+            if self._names is None:
+                return _index_of(wanted, self._read_names())
+            found = _index_of(wanted, self._names)
+            if found is not None and self._name_is(found, wanted):
+                return found
+            self._names = self._read_names()  # stale or missing: read again
+            return _index_of(wanted, self._names)
+
+    def _name_is(self, pattern_id: int, wanted: str) -> bool:
+        """Whether the card's pattern ``pattern_id`` has this (lower-case) name."""
+        try:
+            return self.name(pattern_id).lower() == wanted
+        except CommandError:  # the id is past the end of the list
+            return False
 
     def info(self, pattern_id: int) -> PatternInfo:
         """Header metadata of a pattern (works while the display is running)."""
@@ -1175,17 +1253,24 @@ class PatternLibrary:
         If the name is taken, the controller adds an ``X001_``-style prefix;
         check [`name`][arena_interface.device.PatternLibrary.name] afterwards.
         """
-        return m.decode_u16(
-            self._dev._send(m.set_pattern_filename(pattern_id, name)).payload
-        )
+        with self._dev._lock:
+            new_id = m.decode_u16(
+                self._dev._send(m.set_pattern_filename(pattern_id, name)).payload
+            )
+            self.refresh()
+            return new_id
 
     def delete(self, pattern_id: int) -> None:
         """Delete a pattern; ids of later patterns move down by one."""
-        self._dev._send(m.delete_pattern_file(pattern_id))
+        with self._dev._lock:
+            self._dev._send(m.delete_pattern_file(pattern_id))
+            self.refresh()
 
     def format_card(self) -> None:
         """Erase the whole SD card: patterns, panel firmware and manifests."""
-        self._dev._send(m.purge_memory())
+        with self._dev._lock:
+            self._dev._send(m.purge_memory())
+            self.refresh()
 
     def archive(self) -> bytes:
         """The SD card contents as a ZIP file."""
@@ -1200,6 +1285,14 @@ class PatternLibrary:
                 f"pattern is {data[8]}x{data[9]} panels but the controller drives "
                 f"{shape[0]}x{shape[1]}; it would be rejected when played"
             )
+
+
+def _index_of(wanted: str, names: list[str]) -> int | None:
+    """Id (position + 1) of a lower-case name in a list of names, or None."""
+    for i, name in enumerate(names, start=1):
+        if name.lower() == wanted:
+            return i
+    return None
 
 
 class IO:
