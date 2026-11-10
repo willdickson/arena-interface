@@ -8,8 +8,9 @@ Skipped by default; run with ``uv run pytest -m hardware``. Environment:
 * ``ARENA_ALLOW_RESET=1``: allow the test that reboots the controller.
 
 The tests leave the arena dark, do not change the refresh rate (it stays in
-force until a reboot) or the Digital IO roles, and remove the one temporary
-pattern they upload (``zz_hwtest.pat``) even if a test fails.
+force until a reboot) or the Digital IO roles, and remove the temporary
+pattern they upload (``zz_hwtest.pat``, briefly renamed ``00_hwtest.pat``)
+even if a test fails.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ import statistics
 import time
 from collections.abc import Iterator
 
+import numpy as np
 import pytest
 
 from arena_interface import (
@@ -37,11 +39,13 @@ from arena_interface import (
     StateRecord,
     TrialMode,
 )
+from arena_interface import messages as m
 from arena_interface.protocol import Opcode
 
 pytestmark = pytest.mark.hardware
 
 TEMP_NAME = "zz_hwtest.pat"
+TEMP_FIRST = "00_hwtest.pat"  # sorts before TEMP_NAME, shifting ids between
 
 
 def _flag(name: str) -> bool:
@@ -55,11 +59,17 @@ def dev() -> Iterator[Device]:
         yield dev
     finally:
         if dev.is_open:
-            stale = dev.patterns.find(TEMP_NAME)
-            if stale is not None:
-                dev.stop()
-                dev.patterns.delete(stale)
+            _remove_temp_patterns(dev)
         dev.close()
+
+
+def _remove_temp_patterns(dev: Device) -> None:
+    dev.patterns.cache = False
+    for name in (TEMP_NAME, TEMP_FIRST):
+        stale = dev.patterns.find(name)
+        if stale is not None:
+            dev.stop()
+            dev.patterns.delete(stale)
 
 
 @pytest.fixture(autouse=True)
@@ -176,6 +186,51 @@ def test_pattern_round_trip(dev: Device) -> None:
         dev.stop()
         dev.patterns.delete(dev.patterns.find(TEMP_NAME))  # type: ignore[arg-type]
     assert dev.patterns.find(TEMP_NAME) is None
+
+
+def test_patterns_by_name_and_name_cache(dev: Device) -> None:
+    h, w = dev.arena.pixel_shape
+    pattern = Pattern.from_frames(np.zeros((7, h, w), dtype=np.uint8))  # 7 frames
+    dev.stop()
+    dev.patterns.cache = False
+    try:
+        pid = dev.patterns.upload(TEMP_NAME, pattern, overwrite=True)
+        # Cache off: names are looked up on the card (case and .pat optional).
+        assert dev.patterns.find("ZZ_HWTEST") == pid
+        dev.show_pattern("zz_hwtest")
+        assert dev.frame_position.frame_count == 7
+        dev.stop()
+
+        # Cache on: same answers, from one request per lookup.
+        dev.patterns.cache = True
+        assert dev.patterns.find(TEMP_NAME) == pid
+        dev.start_trial("ZZ_hwtest.PAT", frame_rate=10)
+        assert dev.frame_position.frame_count == 7
+        dev.stop()
+
+        # Changed behind the library's back (as another program would): the
+        # pattern moves earlier, and the ids of the patterns it passes shift.
+        dev._send(m.set_pattern_filename(pid, TEMP_FIRST))
+        assert dev.patterns.find(TEMP_NAME) is None
+        on_card = {e.name: e.pattern_id for e in dev.patterns}
+        assert on_card[TEMP_FIRST] < pid
+        for name, expected in on_card.items():
+            assert dev.patterns.find(name) == expected, name
+        dev.show_pattern("00_HWTEST")
+        assert dev.frame_position.frame_count == 7
+        dev.stop()
+
+        # Changed through the library: the cache follows.
+        assert dev.patterns.name(on_card[TEMP_FIRST]) == TEMP_FIRST  # be sure
+        dev.patterns.delete(on_card[TEMP_FIRST])
+        assert dev.patterns.find(TEMP_FIRST) is None
+        on_card = {e.name: e.pattern_id for e in dev.patterns}
+        for name, expected in on_card.items():
+            assert dev.patterns.find(name) == expected, name
+    finally:
+        _remove_temp_patterns(dev)
+    assert dev.patterns.find(TEMP_NAME) is None
+    assert dev.patterns.find(TEMP_FIRST) is None
 
 
 def test_transfer_refused_while_displaying(dev: Device) -> None:

@@ -106,8 +106,9 @@ ARENA_LOOPBACK=1 uv run pytest -m hardware      # with an Analog Out -> In 1 cab
 | `ARENA_ALLOW_RESET=1` | Run the test that reboots the controller |
 
 The hardware tests leave the arena dark, do not change the refresh rate or
-Digital IO roles, and delete the one temporary pattern (`zz_hwtest.pat`)
-they upload.
+Digital IO roles, and delete the temporary pattern they upload
+(`zz_hwtest.pat`, which one test briefly renames `00_hwtest.pat`), even if a
+test fails.
 
 ## Development
 
