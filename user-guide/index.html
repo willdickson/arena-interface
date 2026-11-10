@@ -1091,19 +1091,29 @@ same controller to come back, checked by its MAC address, so a different
 controller on the same port is not picked up by mistake. <code>reconnect()</code> also
 recovers after a <code>DeviceDisconnected</code> error (cable unplugged).</p>
 <h2 id="displaying-patterns-from-the-sd-card">Displaying patterns from the SD card<a class="headerlink" href="#displaying-patterns-from-the-sd-card" title="Permanent link">&para;</a></h2>
-<p>Patterns on the SD card are addressed by a <strong>1-based id</strong> in alphabetical
-order of file name.</p>
-<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>      <span class="c1"># forwards</span>
-<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=-</span><span class="mi">60</span><span class="p">)</span>     <span class="c1"># backwards</span>
-<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">CLOSED_LOOP</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>          <span class="c1"># 2 fps per volt</span>
-<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>             <span class="c1"># stops by itself</span>
-<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duty_cycle</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>            <span class="c1"># dimmer, this trial only</span>
+<p>Choose a pattern by its <strong>file name</strong> or its <strong>id</strong>: its number in the
+alphabetical list of patterns on the card, starting at 1 (the first pattern
+is 1). Names are forgiving: the <code>.pat</code> extension is optional and case is ignored, so
+<code>"grating"</code> finds <code>grating.pat</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>   <span class="c1"># forwards</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">OPEN_LOOP</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=-</span><span class="mi">60</span><span class="p">)</span>  <span class="c1"># backwards</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">,</span> <span class="n">TrialMode</span><span class="o">.</span><span class="n">CLOSED_LOOP</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>       <span class="c1"># 2 fps per volt</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>          <span class="c1"># stops by itself</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">duty_cycle</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>         <span class="c1"># dimmer, this trial only</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">start_trial</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>                                <span class="c1"># by id</span>
 </code></pre></div>
+<p>Ids are positions in the alphabetical list of file names, so they <strong>change</strong>
+when patterns are uploaded, renamed or deleted; a name keeps meaning the same
+file. The firmware loads patterns by id only, so a name costs one request per
+pattern on the card to look up (about 0.25 ms each: 11 ms for a card with 41
+patterns). That is fine before a trial; in a tight loop, look the id up once
+with <code>dev.patterns.find(name)</code>.
+An unknown name raises <code>KeyError</code>, listing the patterns on the card.</p>
 <p><code>duration</code> is timed by the controller (10 ms resolution, up to 655 s), so the
 trial ends on time even if the computer is busy. <code>duty_cycle</code> overrides the
 brightness stored in the pattern for this trial only.</p>
 <p>To choose each frame yourself:</p>
-<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">show_pattern</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                 <span class="c1"># load, show frame 0, don't advance</span>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span><span class="o">.</span><span class="n">show_pattern</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">)</span>         <span class="c1"># load, show frame 0, don't advance</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">frame_position</span><span class="o">.</span><span class="n">frame_count</span><span class="p">):</span>
     <span class="n">dev</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 </code></pre></div>
@@ -1174,6 +1184,7 @@ library checks this before uploading.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">len</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">)</span>                          <span class="c1"># how many</span>
 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">:</span>                 <span class="c1"># PatternEntry(pattern_id, name)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">pattern_id</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"grating"</span><span class="p">)</span>               <span class="c1"># id of grating.pat, or None</span>
 <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                       <span class="c1"># frames, gray level, grid, size</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>            <span class="c1"># the .pat file</span>
 <span class="n">new_id</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">"x.pat"</span><span class="p">,</span> <span class="n">data_or_pattern</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1329,8 +1340,8 @@ counted (<code>sampler.skipped</code>). Each reading is one USB round trip of ab
 timing, and what the previous boot was doing when it last reset), the last
 CPU fault, SD card identity, debug-text output and the panel SPI clock.</p>
 <p><code>dev.panel_firmware</code> stores a panel firmware image on the SD card, then
-programs and verifies panels one at a time (1-based panel numbers, as on the
-panel map). The display must be off.</p>
+programs and verifies panels one at a time, by panel number (the first panel
+is 1, as on the panel map). The display must be off.</p>
 <h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
 <p>All exceptions derive from <code>DeviceError</code>.</p>
 <table>

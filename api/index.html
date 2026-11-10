@@ -6940,7 +6940,7 @@ different controller answers.</p>
 
 <a href="#arena_interface.device.Device.start_trial" class="headerlink" title="Permanent link">&para;</a></h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">start_trial</span><span class="p">(</span>
-    <span class="n">pattern_id</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            TrialMode (arena_interface.protocol.TrialMode)" href="#arena_interface.protocol.TrialMode">TrialMode</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            OPEN_LOOP
 
 
@@ -6975,14 +6975,18 @@ different controller answers.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>pattern_id</code>
+                <code>pattern</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><span title="int">int</span> | <span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>1-based pattern index (see <code>device.patterns</code>).</p>
+                <p>The SD-card pattern: its file name (<code>.pat</code> optional,
+case ignored) or its id, its number in the alphabetical list
+of file names starting at 1 (see <code>device.patterns</code>). Ids
+change when patterns are added, renamed or deleted; names do
+not.</p>
               </div>
             </td>
             <td>
@@ -7037,7 +7041,7 @@ or closed loop (frame rate follows Analog In 1).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>0-based first frame.</p>
+                <p>Frame to start on (the first frame is 0).</p>
               </div>
             </td>
             <td>
@@ -7108,6 +7112,16 @@ pattern's own.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="KeyError">KeyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If no pattern has that name.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><a class="autorefs autorefs-internal" title="            CommandError (arena_interface.errors.CommandError)" href="#arena_interface.errors.CommandError">CommandError</a></code>
             </td>
             <td>
@@ -7121,6 +7135,19 @@ error code briefly and goes dark).</p>
     </table>
 
 
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with Device.open(simulate=True) as dev:
+...     dev.start_trial("demo_gs2", frame_rate=30)  # demo_gs2.pat
+...     dev.start_trial(1, frame_rate=30)  # the first pattern</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
     </div>
 
 </div>
@@ -7133,12 +7160,67 @@ error code briefly and goes dark).</p>
 
 
 <a href="#arena_interface.device.Device.show_pattern" class="headerlink" title="Permanent link">&para;</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show_pattern</span><span class="p">(</span><span class="n">pattern_id</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show_pattern</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Load a pattern and show its first frame, without advancing.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pattern</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | <span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>File name (<code>.pat</code> optional, case ignored) or id (the
+first pattern is 1), as for <code>start_trial</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="KeyError">KeyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If no pattern has that name.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -7158,7 +7240,7 @@ error code briefly and goes dark).</p>
 
     <div class="doc doc-contents ">
 
-        <p>Show a 0-based frame of the loaded pattern.</p>
+        <p>Show one frame of the loaded pattern (the first frame is 0).</p>
 
 
 <p><span class="doc-section-title">Raises:</span></p>
@@ -7515,7 +7597,7 @@ size gives the arena.</p>
     <span class="n">frames</span><span class="p">:</span> <span class="n"><span title="collections.abc.Iterable">Iterable</span></span><span class="p">[</span><span class="n"><span title="int">int</span></span><span class="p">],</span>
     <span class="n">fps</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">pattern_id</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">late</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LatePolicy
 
 
@@ -7557,7 +7639,8 @@ size gives the arena.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>0-based frame indices, in the order to show them.</p>
+                <p>Frame numbers (the first frame is 0), in the order to show
+them.</p>
               </div>
             </td>
             <td>
@@ -7582,15 +7665,16 @@ size gives the arena.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>pattern_id</code>
+                <code>pattern</code>
             </td>
             <td>
-                  <code><span title="int">int</span> | None</code>
+                  <code><span title="int">int</span> | <span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Load this pattern first (as <code>show_pattern</code>); by
-default the pattern already loaded is used.</p>
+                <p>Load this pattern first (file name or id, as for
+<code>show_pattern</code>); by default the pattern already loaded is
+used.</p>
               </div>
             </td>
             <td>
@@ -7735,7 +7819,7 @@ changes actually displayed (needs telemetry); the report's
 <blockquote>
 <blockquote>
 <p>with Device.open(simulate=True) as dev:
-...     report = dev.play_frames(range(16), fps=100, pattern_id=1)
+...     report = dev.play_frames(range(16), fps=100, pattern=1)
 report.sent
 16</p>
 </blockquote>
@@ -7759,7 +7843,7 @@ report.sent
     <span class="n">frames</span><span class="p">:</span> <span class="n"><span title="collections.abc.Iterable">Iterable</span></span><span class="p">[</span><span class="n"><span title="int">int</span></span><span class="p">],</span>
     <span class="n">fps</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">pattern_id</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">late</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LatePolicy
 
 
@@ -8483,9 +8567,10 @@ len(samples)
 
 
         <p>Patterns stored on the controller's SD card (<code>device.patterns</code>).</p>
-<p>Patterns are addressed by a 1-based id in alphabetical order of file
-name. Uploading, renaming and deleting re-sort the list, so ids can change;
-the methods that change the library return the new id.</p>
+<p>Patterns are addressed by an id: their number in the alphabetical list
+of file names, starting at 1 for the first. Uploading, renaming and
+deleting re-sort the list, so ids can change; the methods that change the
+library return the new id.</p>
 <p>Downloading, uploading, formatting and archiving need the display to be
 off (call <code>device.stop()</code> first); otherwise the controller refuses with a
 <a class="autorefs autorefs-internal" title="            CommandError" href="#arena_interface.errors.CommandError"><code>CommandError</code></a>.</p>
@@ -8572,6 +8657,10 @@ off (call <code>device.stop()</code> first); otherwise the controller refuses wi
     <div class="doc doc-contents ">
 
         <p>Id of the pattern with this file name, or None.</p>
+<p>The match ignores case (as the SD card's file system does), and the
+<code>.pat</code> extension may be left out: <code>"Grating"</code> finds
+<code>grating.pat</code>. Each call reads the names from the controller, one
+request per pattern.</p>
 
 
     </div>
@@ -8901,7 +8990,8 @@ check <a class="autorefs autorefs-internal" title="            name" href="#aren
             </td>
             <td>
               <div class="doc-md-description">
-                <p>1-based index, as used by <code>start_trial</code>.</p>
+                <p>Number in the alphabetical list of patterns, starting
+at 1 (it changes when patterns are added, renamed or deleted).</p>
               </div>
             </td>
           </tr>
@@ -9426,8 +9516,8 @@ frame-scan role is refused.</p>
 
         <p>Update the panels' own firmware (<code>device.panel_firmware</code>).</p>
 <p>The controller keeps one panel image on its SD card; upload it, then
-program and verify panels one at a time (1-based panel numbers). The
-display must be off.</p>
+program and verify panels one at a time, by panel number (the first
+panel is 1). The display must be off.</p>
 
         <p>Bind to a device.</p>
 
@@ -10921,8 +11011,8 @@ rig and fitted to the firmware's grid when sent; see
             </td>
             <td>
               <div class="doc-md-description">
-                <p>0-based grid columns that hold panels, or None if
-every column does.</p>
+                <p>Grid columns that hold panels, numbered from 0 at
+the left, or None if every column does.</p>
               </div>
             </td>
           </tr>
