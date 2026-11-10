@@ -43,7 +43,7 @@ def main() -> None:
 
         panel = args.program or (1 if args.simulate else None)
         if panel is None:
-            print("Pass --program N to flash panel N (1-based).")
+            print("Pass --program N to flash panel N (the first panel is 1).")
             return
         print(f"Before: {fw.verify(panel)}")
         print(f"Programming panel {panel}: {fw.program(panel)}")

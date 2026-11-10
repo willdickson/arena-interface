@@ -449,7 +449,7 @@ class Device:
 
     def start_trial(
         self,
-        pattern_id: int,
+        pattern: int | str,
         mode: TrialMode = TrialMode.OPEN_LOOP,
         *,
         frame_rate: int = 0,
@@ -461,21 +461,32 @@ class Device:
         """Start displaying an SD-card pattern.
 
         Args:
-            pattern_id: 1-based pattern index (see ``device.patterns``).
+            pattern: The SD-card pattern: its file name (``.pat`` optional,
+                case ignored) or its id, its number in the alphabetical list
+                of file names starting at 1 (see ``device.patterns``). Ids
+                change when patterns are added, renamed or deleted; names do
+                not.
             mode: Open loop (auto-advance), show frame (you choose the frame)
                 or closed loop (frame rate follows Analog In 1).
             frame_rate: Frames per second in open loop; negative plays backwards.
-            initial_frame: 0-based first frame.
+            initial_frame: Frame to start on (the first frame is 0).
             gain: Closed-loop gain in tenths of frames per second per volt.
             duration: Seconds until the controller stops by itself; 0 = never.
             duty_cycle: Brightness 1-255 for this trial, or None for the
                 pattern's own.
 
         Raises:
+            KeyError: If no pattern has that name.
             CommandError: If the pattern cannot be loaded (the arena shows an
                 error code briefly and goes dark).
+
+        Example:
+            >>> with Device.open(simulate=True) as dev:
+            ...     dev.start_trial("demo_gs2", frame_rate=30)  # demo_gs2.pat
+            ...     dev.start_trial(1, frame_rate=30)  # the first pattern
         """
         with self._lock:
+            pattern_id = self._pattern_id(pattern)
             self._frame_count = None
             self._send(
                 m.trial_params(
@@ -490,15 +501,38 @@ class Device:
             )
             self._frame_count = self.frame_position.frame_count
 
-    def show_pattern(self, pattern_id: int) -> None:
-        """Load a pattern and show its first frame, without advancing."""
+    def show_pattern(self, pattern: int | str) -> None:
+        """Load a pattern and show its first frame, without advancing.
+
+        Args:
+            pattern: File name (``.pat`` optional, case ignored) or id (the
+                first pattern is 1), as for ``start_trial``.
+
+        Raises:
+            KeyError: If no pattern has that name.
+        """
         with self._lock:
+            pattern_id = self._pattern_id(pattern)
             self._frame_count = None
             self._send(m.set_pattern_id(pattern_id))
             self._frame_count = self.frame_position.frame_count
 
+    def _pattern_id(self, pattern: int | str) -> int:
+        """The id (first pattern = 1) of a pattern given by id or file name."""
+        if isinstance(pattern, str):
+            found = self.patterns.find(pattern)
+            if found is None:
+                names = [e.name for e in self.patterns]
+                shown = ", ".join(names[:20]) + (", ..." if len(names) > 20 else "")
+                raise KeyError(
+                    f"no pattern named {pattern!r} on the SD card"
+                    + (f"; patterns: {shown}" if names else " (it has no patterns)")
+                )
+            return found
+        return pattern
+
     def show_frame(self, index: int) -> None:
-        """Show a 0-based frame of the loaded pattern.
+        """Show one frame of the loaded pattern (the first frame is 0).
 
         Raises:
             ValueError: If the index is beyond the loaded pattern (checked
@@ -632,7 +666,7 @@ class Device:
         frames: Iterable[int],
         fps: float,
         *,
-        pattern_id: int | None = None,
+        pattern: int | str | None = None,
         late: LatePolicy = "skip",
         refresh_rate: int | None = None,
         verify: bool = False,
@@ -640,10 +674,12 @@ class Device:
         """Show frames of the loaded SD pattern at a fixed rate, paced by the computer.
 
         Args:
-            frames: 0-based frame indices, in the order to show them.
+            frames: Frame numbers (the first frame is 0), in the order to show
+                them.
             fps: Frames per second.
-            pattern_id: Load this pattern first (as ``show_pattern``); by
-                default the pattern already loaded is used.
+            pattern: Load this pattern first (file name or id, as for
+                ``show_pattern``); by default the pattern already loaded is
+                used.
             late: ``"skip"`` drops frames whose time has passed, keeping the
                 schedule; ``"send"`` sends every frame, possibly late.
             refresh_rate: Set the controller's refresh rate first. It stays in
@@ -661,11 +697,11 @@ class Device:
 
         Example:
             >>> with Device.open(simulate=True) as dev:
-            ...     report = dev.play_frames(range(16), fps=100, pattern_id=1)
+            ...     report = dev.play_frames(range(16), fps=100, pattern=1)
             >>> report.sent
             16
         """
-        job = self._frames_job(frames, fps, pattern_id, late, refresh_rate, verify)
+        job = self._frames_job(frames, fps, pattern, late, refresh_rate, verify)
         return job[0](threading.Event(), None)
 
     def start_frames(
@@ -673,7 +709,7 @@ class Device:
         frames: Iterable[int],
         fps: float,
         *,
-        pattern_id: int | None = None,
+        pattern: int | str | None = None,
         late: LatePolicy = "skip",
         refresh_rate: int | None = None,
         verify: bool = False,
@@ -684,9 +720,7 @@ class Device:
             A running [`Playback`][arena_interface.playback.Playback]; call
             ``wait()`` for the report or ``stop()`` to end early.
         """
-        run, total = self._frames_job(
-            frames, fps, pattern_id, late, refresh_rate, verify
-        )
+        run, total = self._frames_job(frames, fps, pattern, late, refresh_rate, verify)
         return Playback(run, total)
 
     def play_images(
@@ -793,7 +827,7 @@ class Device:
         self,
         frames: Iterable[int],
         fps: float,
-        pattern_id: int | None,
+        pattern: int | str | None,
         late: LatePolicy,
         refresh_rate: int | None,
         verify: bool,
@@ -802,14 +836,14 @@ class Device:
     ]:
         """Validate and prepare frame playback; return (runner, frame count)."""
         Pacer(fps, late=late)  # validates fps and late
-        if pattern_id is not None:
-            self.show_pattern(pattern_id)
+        if pattern is not None:
+            self.show_pattern(pattern)
         count = self._frame_count
         if count is None:
             count = self.frame_position.frame_count
         if not count:
             raise ValueError(
-                "no pattern is loaded; pass pattern_id or call show_pattern()"
+                "no pattern is loaded; pass pattern= or call show_pattern()"
             )
         sequence = list(frames)
         bad = [i for i in sequence if not isinstance(i, int) or not 0 <= i < count]
@@ -1025,7 +1059,8 @@ class PatternEntry:
     """A pattern on the SD card.
 
     Attributes:
-        pattern_id: 1-based index, as used by ``start_trial``.
+        pattern_id: Number in the alphabetical list of patterns, starting
+            at 1 (it changes when patterns are added, renamed or deleted).
         name: File name.
     """
 
@@ -1036,9 +1071,10 @@ class PatternEntry:
 class PatternLibrary:
     """Patterns stored on the controller's SD card (``device.patterns``).
 
-    Patterns are addressed by a 1-based id in alphabetical order of file
-    name. Uploading, renaming and deleting re-sort the list, so ids can change;
-    the methods that change the library return the new id.
+    Patterns are addressed by an id: their number in the alphabetical list
+    of file names, starting at 1 for the first. Uploading, renaming and
+    deleting re-sort the list, so ids can change; the methods that change the
+    library return the new id.
 
     Downloading, uploading, formatting and archiving need the display to be
     off (call ``device.stop()`` first); otherwise the controller refuses with a
@@ -1069,9 +1105,18 @@ class PatternLibrary:
         )
 
     def find(self, name: str) -> int | None:
-        """Id of the pattern with this file name, or None."""
+        """Id of the pattern with this file name, or None.
+
+        The match ignores case (as the SD card's file system does), and the
+        ``.pat`` extension may be left out: ``"Grating"`` finds
+        ``grating.pat``. Each call reads the names from the controller, one
+        request per pattern.
+        """
+        wanted = name.strip().lower()
+        if not wanted.endswith(".pat"):
+            wanted += ".pat"
         for entry in self.entries():
-            if entry.name == name:
+            if entry.name.lower() == wanted:
                 return entry.pattern_id
         return None
 
@@ -1287,8 +1332,8 @@ class PanelFirmware:
     """Update the panels' own firmware (``device.panel_firmware``).
 
     The controller keeps one panel image on its SD card; upload it, then
-    program and verify panels one at a time (1-based panel numbers). The
-    display must be off.
+    program and verify panels one at a time, by panel number (the first
+    panel is 1). The display must be off.
     """
 
     def __init__(self, device: Device) -> None:

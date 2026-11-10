@@ -35,8 +35,8 @@ class Arena:
     Attributes:
         rows: Panel rows.
         cols: Panel columns of the full grid (including uninstalled ones).
-        installed_columns: 0-based grid columns that hold panels, or None if
-            every column does.
+        installed_columns: Grid columns that hold panels, numbered from 0 at
+            the left, or None if every column does.
         name: Registry name, e.g. ``"G6_2x10"`` (empty for custom arenas).
         arena_id: Registry id stored in pattern headers (0 = unspecified).
     """

@@ -17,7 +17,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help="serial port (default: auto-detect)")
     parser.add_argument("--simulate", action="store_true", help="use fake device")
-    parser.add_argument("--pattern", type=int, default=1, help="pattern id (1-based)")
+    parser.add_argument(
+        "--pattern",
+        type=lambda s: int(s) if s.isdigit() else s,
+        default=1,
+        help="pattern file name (e.g. grating.pat) or id (first pattern = 1)",
+    )
     parser.add_argument("--fps", type=float, default=100.0, help="frames per second")
     args = parser.parse_args()
 

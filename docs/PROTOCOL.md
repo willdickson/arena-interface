@@ -596,6 +596,13 @@ Behaviour the library adds on top of the wire protocol, as agreed in review.
   are described directly (`Arena(rows, cols, installed_columns=..., arena_id=...)`).
   Loading the maDisplayTools YAML arena registry was planned as an option but
   dropped (2026-11-09); new arenas are added to the built-in list instead.
+- **SD patterns can be chosen by file name.** `start_trial`, `show_pattern`
+  and the playback methods take `pattern`: a 1-based id or a file name
+  (decided 2026-11-09). Names match case-insensitively with `.pat` optional,
+  as FAT file names do; an unknown name raises `KeyError`. The firmware only
+  loads by id, so a name is resolved by listing the card
+  (GET_PATTERN_FILENAME per pattern) on every call, with no cache. Ids shift
+  when files are added, renamed or deleted, so names are the stable choice.
 - **Patterns are full-grid.** The panel mask is always "all panels"; columns
   that are not installed are left blank. This matches the JS tools
   (`pattern-set.js`: the controller cannot play partial-arena patterns).

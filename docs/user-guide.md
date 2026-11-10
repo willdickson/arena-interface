@@ -71,16 +71,27 @@ recovers after a `DeviceDisconnected` error (cable unplugged).
 
 ## Displaying patterns from the SD card
 
-Patterns on the SD card are addressed by a **1-based id** in alphabetical
-order of file name.
+Choose a pattern by its **file name** or its **id**: its number in the
+alphabetical list of patterns on the card, starting at 1 (the first pattern
+is 1). Names are forgiving: the `.pat` extension is optional and case is ignored, so
+`"grating"` finds `grating.pat`.
 
 ```python
-dev.start_trial(3, TrialMode.OPEN_LOOP, frame_rate=60)      # forwards
-dev.start_trial(3, TrialMode.OPEN_LOOP, frame_rate=-60)     # backwards
-dev.start_trial(3, TrialMode.CLOSED_LOOP, gain=20)          # 2 fps per volt
-dev.start_trial(3, frame_rate=60, duration=5.0)             # stops by itself
-dev.start_trial(3, frame_rate=60, duty_cycle=64)            # dimmer, this trial only
+dev.start_trial("grating", TrialMode.OPEN_LOOP, frame_rate=60)   # forwards
+dev.start_trial("grating", TrialMode.OPEN_LOOP, frame_rate=-60)  # backwards
+dev.start_trial("grating", TrialMode.CLOSED_LOOP, gain=20)       # 2 fps per volt
+dev.start_trial("grating", frame_rate=60, duration=5.0)          # stops by itself
+dev.start_trial("grating", frame_rate=60, duty_cycle=64)         # dimmer, this trial only
+dev.start_trial(3, frame_rate=60)                                # by id
 ```
+
+Ids are positions in the alphabetical list of file names, so they **change**
+when patterns are uploaded, renamed or deleted; a name keeps meaning the same
+file. The firmware loads patterns by id only, so a name costs one request per
+pattern on the card to look up (about 0.25 ms each: 11 ms for a card with 41
+patterns). That is fine before a trial; in a tight loop, look the id up once
+with `dev.patterns.find(name)`.
+An unknown name raises `KeyError`, listing the patterns on the card.
 
 `duration` is timed by the controller (10 ms resolution, up to 655 s), so the
 trial ends on time even if the computer is busy. `duty_cycle` overrides the
@@ -89,7 +100,7 @@ brightness stored in the pattern for this trial only.
 To choose each frame yourself:
 
 ```python
-dev.show_pattern(3)                 # load, show frame 0, don't advance
+dev.show_pattern("grating")         # load, show frame 0, don't advance
 for i in range(dev.frame_position.frame_count):
     dev.show_frame(i)
 ```
@@ -175,6 +186,7 @@ library checks this before uploading.
 len(dev.patterns)                          # how many
 for entry in dev.patterns:                 # PatternEntry(pattern_id, name)
     print(entry.pattern_id, entry.name)
+dev.patterns.find("grating")               # id of grating.pat, or None
 dev.patterns.info(3)                       # frames, gray level, grid, size
 data = dev.patterns.download(3)            # the .pat file
 new_id = dev.patterns.upload("x.pat", data_or_pattern, overwrite=True)
@@ -371,8 +383,8 @@ timing, and what the previous boot was doing when it last reset), the last
 CPU fault, SD card identity, debug-text output and the panel SPI clock.
 
 `dev.panel_firmware` stores a panel firmware image on the SD card, then
-programs and verifies panels one at a time (1-based panel numbers, as on the
-panel map). The display must be off.
+programs and verifies panels one at a time, by panel number (the first panel
+is 1, as on the panel map). The display must be off.
 
 ## Errors
 

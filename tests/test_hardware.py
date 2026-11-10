@@ -281,7 +281,7 @@ def _long_pattern(dev: Device) -> int:
 
 def test_play_frames_timing_and_display(dev: Device) -> None:
     pid = _long_pattern(dev)
-    report = dev.play_frames(range(100), fps=PLAYBACK_FPS, pattern_id=pid, verify=True)
+    report = dev.play_frames(range(100), fps=PLAYBACK_FPS, pattern=pid, verify=True)
     print(report)
     _assert_timing(report)
     # The controller's own accounting is exact; an SD read stall can still make

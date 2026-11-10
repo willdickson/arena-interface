@@ -276,6 +276,33 @@ def test_pattern_listing(dev: Device) -> None:
     assert dev.patterns.info(1).frame_count == 16
 
 
+@pytest.mark.parametrize(
+    "name", ["demo_gs2.pat", "demo_gs2", "DEMO_GS2.PAT", "Demo_GS2", " demo_gs2 "]
+)
+def test_pattern_find_is_forgiving(dev: Device, name: str) -> None:
+    assert dev.patterns.find(name) == 2
+
+
+def test_patterns_selected_by_name_or_id(dev: Device) -> None:
+    # demo_gs16.pat (id 1) has 16 frames, demo_gs2.pat (id 2) has 2.
+    dev.start_trial("demo_gs2", frame_rate=10)
+    assert dev.frame_position.frame_count == 2
+    dev.start_trial(1, frame_rate=10)
+    assert dev.frame_position.frame_count == 16
+    dev.show_pattern("Demo_GS2.pat")
+    assert dev.frame_position.frame_count == 2
+    report = dev.play_frames([0, 15, 3], fps=200, pattern="demo_gs16")
+    assert report.sent == 3
+    assert dev.frame_position.frame_count == 16
+
+
+def test_unknown_pattern_name_lists_the_card(dev: Device) -> None:
+    with pytest.raises(KeyError, match="demo_gs16.pat, demo_gs2.pat"):
+        dev.start_trial("grating", frame_rate=10)
+    with pytest.raises(KeyError, match="no pattern named 'missing'"):
+        dev.start_frames(range(2), fps=100, pattern="missing")
+
+
 def test_pattern_upload_download_delete(dev: Device) -> None:
     data = make_test_pattern(2, 10, 3)
     new_id = dev.patterns.upload("b_stripes.pat", data)

@@ -57,7 +57,7 @@ def test_play_frames_sends_every_frame_on_schedule(
     dev: Device, ctrl: FakeController
 ) -> None:
     frames = [0, 5, 2, 15, 1, 1, 3, 4]
-    report = dev.play_frames(frames, fps=100, pattern_id=1)
+    report = dev.play_frames(frames, fps=100, pattern=1)
     assert _positions(ctrl) == frames
     assert (report.planned, report.sent, report.skipped) == (8, 8, 0)
     assert report.on_schedule
@@ -88,7 +88,7 @@ def test_play_frames_validates_before_sending(
 
 
 def test_verify_counts_displayed_frames(dev: Device) -> None:
-    report = dev.play_frames(range(16), fps=200, pattern_id=1, verify=True)
+    report = dev.play_frames(range(16), fps=200, pattern=1, verify=True)
     # Loading the pattern already shows frame 0, so 15 changes remain.
     assert report.changes == 15
     assert report.displayed == 15
@@ -136,7 +136,7 @@ def test_falling_behind_is_logged(
 
 def test_fps_above_refresh_rate_warns(dev: Device) -> None:
     with pytest.warns(PerformanceWarning, match="300 Hz"):
-        dev.play_frames(range(4), fps=290, pattern_id=1)
+        dev.play_frames(range(4), fps=290, pattern=1)
 
 
 def test_refresh_rate_argument(dev: Device, ctrl: FakeController) -> None:
@@ -186,7 +186,7 @@ def test_play_images_fits_rig_to_controller_grid() -> None:
 
 
 def test_start_frames_runs_in_background(dev: Device) -> None:
-    player = dev.start_frames(list(range(16)) * 3, fps=100, pattern_id=1)
+    player = dev.start_frames(list(range(16)) * 3, fps=100, pattern=1)
     assert player.running
     assert player.total == 48
     time.sleep(0.1)
@@ -199,7 +199,7 @@ def test_start_frames_runs_in_background(dev: Device) -> None:
 
 
 def test_stop_ends_playback_early(dev: Device) -> None:
-    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern_id=1)
+    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern=1)
     time.sleep(0.05)
     report = player.stop()
     assert report.stopped
@@ -213,7 +213,7 @@ def test_context_manager_stops_playback(dev: Device) -> None:
 
 
 def test_background_error_is_raised_by_wait(dev: Device, ctrl: FakeController) -> None:
-    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern_id=1)
+    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern=1)
     time.sleep(0.03)
     ctrl.unplug()
     with pytest.raises(DeviceDisconnected):
@@ -221,7 +221,7 @@ def test_background_error_is_raised_by_wait(dev: Device, ctrl: FakeController) -
 
 
 def test_wait_timeout(dev: Device) -> None:
-    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern_id=1)
+    player = dev.start_frames(list(range(16)) * 10, fps=100, pattern=1)
     with pytest.raises(TimeoutError):
         player.wait(timeout=0.01)
     player.stop()
