@@ -1106,9 +1106,20 @@ is 1). Names are forgiving: the <code>.pat</code> extension is optional and case
 when patterns are uploaded, renamed or deleted; a name keeps meaning the same
 file. The firmware loads patterns by id only, so a name costs one request per
 pattern on the card to look up (about 0.25 ms each: 11 ms for a card with 41
-patterns). That is fine before a trial; in a tight loop, look the id up once
-with <code>dev.patterns.find(name)</code>.
-An unknown name raises <code>KeyError</code>, listing the patterns on the card.</p>
+patterns). That is fine before a trial. For faster lookups, turn on the
+<strong>name cache</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev</span> <span class="o">=</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">cache_patterns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># reads the names when connecting</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="kc">True</span>                <span class="c1"># or later: reads them now</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="kc">False</span>               <span class="c1"># back to reading the card every time</span>
+</code></pre></div>
+<p>With the cache on, a lookup takes one request (about 0.3 ms) whatever the
+number of patterns. That request checks the card's name at the cached id, so
+even if the card was changed by another program, the wrong pattern is never
+chosen: a failed check, or a name the cache does not know, re-reads the names
+first. Uploading, renaming and deleting through <code>dev.patterns</code>, formatting the
+card and <code>dev.reconnect()</code> re-read them as well. Listing the patterns
+(<code>for entry in dev.patterns</code>) always reads the card.</p>
+<p>An unknown name raises <code>KeyError</code>, listing the patterns on the card.</p>
 <p><code>duration</code> is timed by the controller (10 ms resolution, up to 655 s), so the
 trial ends on time even if the computer is busy. <code>duty_cycle</code> overrides the
 brightness stored in the pattern for this trial only.</p>

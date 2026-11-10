@@ -1589,8 +1589,8 @@ against the simulated controller with no hardware attached:</p>
 <div class="highlight"><pre><span></span><code><span class="sd">"""Manage the patterns on the controller's SD card.</span>
 
 <span class="sd">Shows: iterating device.patterns, info(), upload(), download(), rename(),</span>
-<span class="sd">delete() and archive(). The example uploads its own pattern and removes it</span>
-<span class="sd">again, so the card ends as it started.</span>
+<span class="sd">find() by name with the name cache on, delete() and archive(). The example</span>
+<span class="sd">uploads its own pattern and removes it again, so the card ends as it started.</span>
 <span class="sd">Requires: a controller with an SD card (or --simulate). The display is</span>
 <span class="sd">stopped first, because transfers need it off.</span>
 <span class="sd">"""</span>
@@ -1606,7 +1606,8 @@ against the simulated controller with no hardware attached:</p>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--simulate"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"use fake device"</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
-    <span class="k">with</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev</span><span class="p">:</span>
+    <span class="c1"># cache_patterns: keep the names, so finding a pattern by name is fast.</span>
+    <span class="k">with</span> <span class="n">Device</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">,</span> <span class="n">cache_patterns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev</span><span class="p">:</span>
         <span class="n">dev</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">:</span>
             <span class="n">info</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">pattern_id</span><span class="p">)</span>
@@ -1628,6 +1629,8 @@ against the simulated controller with no hardware attached:</p>
 
         <span class="n">pid</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="s2">"zz_example_08_renamed.pat"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Renamed; id is now </span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">name</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"ZZ_example_08_renamed"</span><span class="p">)</span>  <span class="c1"># case, .pat optional</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found by name: id </span><span class="si">{</span><span class="n">found</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleted; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">)</span><span class="si">}</span><span class="s2"> patterns remain"</span><span class="p">)</span>

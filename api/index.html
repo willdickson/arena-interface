@@ -913,6 +913,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#arena_interface.device.PatternLibrary.cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arena_interface.device.PatternLibrary.refresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refresh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#arena_interface.device.PatternLibrary.entries" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3608,6 +3630,28 @@
   
     <nav class="md-nav" aria-label="PatternLibrary">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arena_interface.device.PatternLibrary.cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arena_interface.device.PatternLibrary.refresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refresh
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#arena_interface.device.PatternLibrary.entries" class="md-nav__link">
@@ -6519,6 +6563,7 @@ G6_2x10 (40, 200)</p>
     <span class="n">probe</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">all_off_on_close</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">arena_shape</span><span class="p">:</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n"><span title="int">int</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_patterns</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Device (arena_interface.device.Device)" href="#arena_interface.device.Device">Device</a></span>
 </code></pre></div>
 
@@ -6622,6 +6667,30 @@ too old to report it.</p>
             </td>
             <td>
                   <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cache_patterns</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Read the SD card's pattern names now and keep them,
+so choosing a pattern by name is fast (see
+<a class="autorefs autorefs-internal" title="            cache
+
+
+  
+      property
+      writable
+  " href="#arena_interface.device.PatternLibrary.cache"><code>PatternLibrary.cache</code></a>).</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
       </tbody>
@@ -8574,6 +8643,15 @@ library return the new id.</p>
 <p>Downloading, uploading, formatting and archiving need the display to be
 off (call <code>device.stop()</code> first); otherwise the controller refuses with a
 <a class="autorefs autorefs-internal" title="            CommandError" href="#arena_interface.errors.CommandError"><code>CommandError</code></a>.</p>
+<p>Looking a pattern up by name reads every name from the card, one request
+per pattern. Turn on <a class="autorefs autorefs-internal" title="            cache
+
+
+  
+      property
+      writable
+  " href="#arena_interface.device.PatternLibrary.cache"><code>cache</code></a>
+to keep the names instead.</p>
 
         <p>Bind to a device.</p>
 
@@ -8595,8 +8673,83 @@ off (call <code>device.stop()</code> first); otherwise the controller refuses wi
 
 
 
+<div class="doc doc-object doc-attribute">
 
 
+
+<h4 id="arena_interface.device.PatternLibrary.cache" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">cache</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+<a href="#arena_interface.device.PatternLibrary.cache" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">cache</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Keep the pattern names, so name lookups are fast (default off).</p>
+<p>Setting it to True reads the names from the card at once; setting it
+to False drops them, and every lookup reads the card again.</p>
+<p>While it is on:</p>
+<ul>
+<li>a name lookup (<code>find</code> and the <code>pattern</code> argument of
+  <code>start_trial</code> and friends) takes one request instead of one per
+  pattern on the card: the card's name at the cached id is checked,
+  so a stale cache never selects the wrong pattern. If the check
+  fails, or the name is not cached, the names are read again before
+  giving up;</li>
+<li><code>upload</code>, <code>rename</code>, <code>delete</code> and <code>format_card</code> re-read the
+  names, as does <code>Device.reconnect</code>;</li>
+<li>listing the patterns (<code>len</code>, iteration, <code>entries</code>) still reads
+  the card.</li>
+</ul>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>with Device.open(simulate=True) as dev:
+...     dev.patterns.cache = True       # reads the names now
+...     dev.start_trial("demo_gs2", frame_rate=30)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="arena_interface.device.PatternLibrary.refresh" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">refresh</span>
+
+
+<a href="#arena_interface.device.PatternLibrary.refresh" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">refresh</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Re-read the cached names from the card (nothing to do if the cache is off).</p>
+<p>Only needed if the card was changed by something other than this
+<code>Device</code> and you want the next lookup to skip the check.</p>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
