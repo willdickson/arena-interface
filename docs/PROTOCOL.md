@@ -536,6 +536,21 @@ Firmware and JS disagree in the places below. The library follows the firmware.
 
 Behaviour the library adds on top of the wire protocol, as agreed in review.
 
+- **Connecting clears stray input held by the controller** (2026-11-11). The
+  USB parser has no inter-byte timeout and is not reset when a host
+  connects, so bytes received before the host connects can leave it holding
+  the start of a command (at most 50 bytes for a binary frame) that swallows
+  the host's first request. Seen on hardware: with a debug build powered on
+  with USB connected, the start-up text waiting in the Teensy is echoed back
+  by the Linux tty (echo is on until pyserial configures the port), and
+  `" G6 arena…"` reads as a 32-byte command with opcode 0x47. If the first
+  GET_CONTROLLER_INFO goes unanswered, the host resends it up to 26 more
+  times (0.1 s each), which completes any such command; the stray command's
+  reply and late answers are discarded. A stray stream-frame header (0x32)
+  claiming more than 50 bytes is not covered. Text junk claims at least
+  0x2020 = 8224 bytes, which a 2x10 build's receive buffer (about 4 KB)
+  cannot hold, so the firmware discards it; builds with more panels have a
+  larger buffer and could wait for it.
 - **Close sends ALL_OFF by default.** Closing the connection (explicitly or by
   leaving a `with` block, including on an exception) sends ALL_OFF before
   releasing the port, so the arena goes dark. This can be turned off per

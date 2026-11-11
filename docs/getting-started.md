@@ -127,4 +127,6 @@ Then read the [user guide](user-guide.md), or browse the [examples](examples.md)
 | `DeviceNotFound: cannot open ...: Permission denied` | Port permissions (see above). |
 | `DeviceNotFound: cannot open ...: ... busy` | Another program has the port open. |
 | `DeviceTimeout` on every command | The port is not a controller, or the controller is wedged; reset it or replug the cable. |
+| Connecting takes a second or more longer than usual | The controller was holding stray bytes received before you connected (for example its start-up text echoed back after powering the arena on with USB connected); the library clears them automatically. Connect with logging at INFO level to see "answered after N extra request(s)". |
+| Anything else to do with connecting | Run `uv run python scripts/connect_debug.py` from the repository: it connects with every byte logged, and if the controller does not answer, checks whether it still obeys ALL_ON / ALL_OFF. |
 | A brief "CE NN" glyph on the arena | The controller rejected a command. The library prevents most cases; see [Errors](user-guide.md#errors). |

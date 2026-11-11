@@ -36,6 +36,7 @@ from .errors import (
     DeviceDisconnected,
     DeviceError,
     DeviceNotFound,
+    DeviceTimeout,
     PerformanceWarning,
     ProtocolError,
     UnsupportedCommand,
@@ -94,6 +95,12 @@ _T = TypeVar("_T")
 
 #: Reply timeout (s) used when probing candidate ports.
 PROBE_TIMEOUT = 0.5
+#: Quick extra tries of the first request when it goes unanswered. Each sends
+#: 2 bytes, so 26 tries complete the longest binary command (50 bytes) the
+#: controller may be holding from stray input it received before we connected.
+RESYNC_TRIES = 26
+#: Seconds to wait for an answer on each of those tries.
+RESYNC_TIMEOUT = 0.1
 #: Reply timeout (s) for the ALL_OFF sent while closing.
 CLOSE_TIMEOUT = 0.5
 
@@ -251,8 +258,8 @@ class Device:
         )
 
     def _identify(self) -> None:
-        self._transport.discard_input()
-        reply = self._send(m.get_controller_info())
+        with self._lock:
+            reply = m.check(_hello(self._transport, m.DEFAULT_TIMEOUT))
         self.info: ControllerInfo = m.decode_controller_info(reply.payload)
         """Protocol version, capabilities and MAC address, read when connecting."""
         if Capability.G6_MODE not in self.info.capabilities:
@@ -1042,12 +1049,49 @@ class Device:
         return data
 
 
+def _hello(link: Transport, timeout: float) -> Response:
+    """Ask for the controller info, first clearing junk the controller may hold.
+
+    Bytes the controller received before we connected (for example its own
+    start-up text echoed back by the computer's serial driver) can leave it
+    holding the start of a command that never completed; it then takes our
+    request as the rest of that command and does not answer. Sending the
+    request again a few more times completes the stray command (which the
+    controller answers or rejects; the reply is discarded) and gets ours
+    answered. Leftover bytes of these requests are harmless: each is either a
+    whole GET_CONTROLLER_INFO or a lone byte the controller discards.
+
+    Raises:
+        DeviceTimeout: If the controller answers none of the tries.
+    """
+    req = m.get_controller_info()
+    link.discard_input()
+    try:
+        return link.request(req.frame, expect=req.opcode, timeout=timeout)
+    except DeviceTimeout:
+        pass
+    _log.info(
+        "no answer from %s; resending to clear stray input it may be holding",
+        link.name,
+    )
+    for extra in range(1, RESYNC_TRIES + 1):
+        try:
+            reply = link.request(req.frame, expect=req.opcode, timeout=RESYNC_TIMEOUT)
+        except DeviceTimeout:
+            continue
+        time.sleep(RESYNC_TIMEOUT)  # let late answers to earlier tries arrive
+        link.discard_input()
+        _log.info("%s answered after %d extra request(s)", link.name, extra)
+        return reply
+    raise DeviceTimeout(
+        f"no response to 0x{req.opcode:02x} from {link.name} ({RESYNC_TRIES + 1} tries)"
+    )
+
+
 def _is_controller(port: PortInfo) -> bool:
     try:
         with Transport.open(port.device) as link:
-            link.discard_input()
-            req = m.get_controller_info()
-            reply = link.request(req.frame, expect=req.opcode, timeout=PROBE_TIMEOUT)
+            reply = _hello(link, PROBE_TIMEOUT)
             info = m.decode_controller_info(m.check(reply).payload)
     except DeviceError as exc:
         _log.debug("probe of %s failed: %s", port.device, exc)

@@ -17,6 +17,7 @@ from arena_interface import (
     DeviceDisconnected,
     DeviceError,
     DeviceNotFound,
+    DeviceTimeout,
     DioRole,
     ErrorCode,
     FirmwareFlag,
@@ -535,3 +536,52 @@ def test_cache_from_open_and_after_reconnect(ctrl: FakeController) -> None:
         ctrl.files["a_new.pat"] = make_test_pattern(2, 10, 3)
         dev.reconnect(timeout=2)
         assert dev.patterns._names == ["a_new.pat", "demo_gs16.pat", "demo_gs2.pat"]
+
+
+# -- stray input held by the controller --------------------------------------
+
+
+@pytest.fixture
+def quick_resync(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Shorter waits: the simulator answers at once."""
+    from arena_interface import messages
+
+    monkeypatch.setattr(messages, "DEFAULT_TIMEOUT", 0.1)
+    monkeypatch.setattr(device_module, "RESYNC_TIMEOUT", 0.01)
+
+
+@pytest.mark.parametrize(
+    "junk",
+    [
+        b" G6 arena controller fw 1",  # echoed start-up text (seen on hardware)
+        b"\x31x",  # the longest binary command: 48 more bytes needed
+        b"2\x10\x00",  # a stream-frame header waiting for 16 bytes
+        b"+GCAP\r",  # a modem probe
+    ],
+)
+@pytest.mark.usefixtures("quick_resync")
+def test_open_clears_stray_input_held_by_the_controller(
+    ctrl: FakeController, junk: bytes, caplog: pytest.LogCaptureFixture
+) -> None:
+    ctrl.feed(junk)  # received before we connect; the controller waits for more
+    caplog.set_level("INFO", logger="arena_interface.device")
+    with Device.open(simulate=ctrl) as dev:
+        assert Capability.G6_MODE in dev.capabilities
+        assert dev.patterns.find("demo_gs2") == 2  # later exchanges are in step
+    assert "extra request" in caplog.text
+
+
+def test_open_without_stray_input_needs_no_retries(
+    ctrl: FakeController, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level("INFO", logger="arena_interface.device")
+    with Device.open(simulate=ctrl):
+        pass
+    assert "extra request" not in caplog.text
+
+
+@pytest.mark.usefixtures("quick_resync")
+def test_open_gives_up_on_a_silent_controller(ctrl: FakeController) -> None:
+    ctrl.muted = True
+    with pytest.raises(DeviceTimeout, match="27 tries"):
+        Device.open(simulate=ctrl)
