@@ -44,7 +44,7 @@ def main() -> None:
         found = dev.patterns.find("ZZ_example_08_renamed")  # case, .pat optional
         print(f"Found by name: id {found}")
 
-        dev.patterns.delete(pid)
+        dev.patterns.delete("zz_example_08_renamed")  # by name: safer than an id
         print(f"Deleted; {len(dev.patterns)} patterns remain")
 
         if args.simulate:  # a full card can take a while to download

@@ -202,20 +202,22 @@ len(dev.patterns)                          # how many
 for entry in dev.patterns:                 # PatternEntry(pattern_id, name)
     print(entry.pattern_id, entry.name)
 dev.patterns.find("grating")               # id of grating.pat, or None
-dev.patterns.info(3)                       # frames, gray level, grid, size
-data = dev.patterns.download(3)            # the .pat file
+dev.patterns.info("grating")               # frames, gray level, grid, size
+data = dev.patterns.download("grating")    # the .pat file
 new_id = dev.patterns.upload("x.pat", data_or_pattern, overwrite=True)
-new_id = dev.patterns.rename(new_id, "y.pat")
-dev.patterns.delete(new_id)
+new_id = dev.patterns.rename("x", "y.pat")
+dev.patterns.delete("y")
 zip_bytes = dev.patterns.archive()         # the whole card as a ZIP
 dev.patterns.format_card()                 # erases everything
 ```
 
 !!! note
     Ids are positions in alphabetical order, so uploading, renaming and
-    deleting can change the ids of other patterns. The methods that change
-    the library return the new id; look ids up with `patterns.find(name)`
-    rather than storing them for long.
+    deleting can change the ids of other patterns. Every method that takes a
+    pattern (`name`, `info`, `download`, `rename`, `delete`, as well as
+    `start_trial` and the others) accepts its file name too, which keeps
+    pointing at the same file; prefer names to stored ids, especially for
+    `delete`.
 
 Downloading, uploading, archiving and formatting need the display to be off:
 call `dev.stop()` first, otherwise the controller refuses with a

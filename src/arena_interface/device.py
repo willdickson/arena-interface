@@ -533,17 +533,7 @@ class Device:
 
     def _pattern_id(self, pattern: int | str) -> int:
         """The id (first pattern = 1) of a pattern given by id or file name."""
-        if isinstance(pattern, str):
-            found = self.patterns.find(pattern)
-            if found is None:
-                names = [e.name for e in self.patterns]
-                shown = ", ".join(names[:20]) + (", ..." if len(names) > 20 else "")
-                raise KeyError(
-                    f"no pattern named {pattern!r} on the SD card"
-                    + (f"; patterns: {shown}" if names else " (it has no patterns)")
-                )
-            return found
-        return pattern
+        return self.patterns._id(pattern)
 
     def show_frame(self, index: int) -> None:
         """Show one frame of the loaded pattern (the first frame is 0).
@@ -1165,11 +1155,33 @@ class PatternLibrary:
         with self._dev._lock:
             return [PatternEntry(i, self.name(i)) for i in range(1, len(self) + 1)]
 
-    def name(self, pattern_id: int) -> str:
-        """File name of a pattern."""
+    def name(self, pattern: int | str) -> str:
+        """File name of a pattern, as stored on the card.
+
+        Args:
+            pattern: Id, or a name to look up (``.pat`` optional, case
+                ignored): ``name("grating")`` gives e.g. ``"Grating.pat"``.
+
+        Raises:
+            KeyError: If no pattern has that name.
+        """
         return m.decode_pattern_filename(
-            self._dev._send(m.get_pattern_filename(pattern_id)).payload
+            self._dev._send(m.get_pattern_filename(self._id(pattern))).payload
         )
+
+    def _id(self, pattern: int | str) -> int:
+        """The id of a pattern given by id or file name (KeyError if unknown)."""
+        if not isinstance(pattern, str):
+            return pattern
+        found = self.find(pattern)
+        if found is None:
+            names = [e.name for e in self.entries()]
+            shown = ", ".join(names[:20]) + (", ..." if len(names) > 20 else "")
+            raise KeyError(
+                f"no pattern named {pattern!r} on the SD card"
+                + (f"; patterns: {shown}" if names else " (it has no patterns)")
+            )
+        return found
 
     def find(self, name: str) -> int | None:
         """Id of the pattern with this file name, or None.
@@ -1198,15 +1210,31 @@ class PatternLibrary:
         except CommandError:  # the id is past the end of the list
             return False
 
-    def info(self, pattern_id: int) -> PatternInfo:
-        """Header metadata of a pattern (works while the display is running)."""
-        return m.decode_pattern_info(
-            self._dev._send(m.get_pattern_info(pattern_id)).payload
-        )
+    def info(self, pattern: int | str) -> PatternInfo:
+        """Header metadata of a pattern (works while the display is running).
 
-    def download(self, pattern_id: int) -> bytes:
-        """Contents of a pattern file."""
-        return self._dev._bulk_read(m.get_pattern_file(pattern_id))
+        Args:
+            pattern: File name (``.pat`` optional, case ignored) or id.
+
+        Raises:
+            KeyError: If no pattern has that name.
+        """
+        with self._dev._lock:
+            return m.decode_pattern_info(
+                self._dev._send(m.get_pattern_info(self._id(pattern))).payload
+            )
+
+    def download(self, pattern: int | str) -> bytes:
+        """Contents of a pattern file.
+
+        Args:
+            pattern: File name (``.pat`` optional, case ignored) or id.
+
+        Raises:
+            KeyError: If no pattern has that name.
+        """
+        with self._dev._lock:
+            return self._dev._bulk_read(m.get_pattern_file(self._id(pattern)))
 
     def upload(
         self, name: str, data: bytes | Pattern, *, overwrite: bool = False
@@ -1247,23 +1275,47 @@ class PatternLibrary:
             self._dev._send(m.set_pattern_file(0, data))
             return self.rename(0, name)
 
-    def rename(self, pattern_id: int, name: str) -> int:
+    def rename(self, pattern: int | str, name: str) -> int:
         """Rename a pattern and return its new id.
 
         If the name is taken, the controller adds an ``X001_``-style prefix;
         check [`name`][arena_interface.device.PatternLibrary.name] afterwards.
+
+        Args:
+            pattern: The pattern to rename: file name (``.pat`` optional,
+                case ignored) or id.
+            name: Its new file name, ending in ``.pat``.
+
+        Raises:
+            KeyError: If no pattern has the old name.
         """
         with self._dev._lock:
+            pattern_id = self._id(pattern)
             new_id = m.decode_u16(
                 self._dev._send(m.set_pattern_filename(pattern_id, name)).payload
             )
             self.refresh()
             return new_id
 
-    def delete(self, pattern_id: int) -> None:
-        """Delete a pattern; ids of later patterns move down by one."""
+    def delete(self, pattern: int | str) -> None:
+        """Delete a pattern; ids of later patterns move down by one.
+
+        Args:
+            pattern: File name (``.pat`` optional, case ignored) or id. A name
+                is the safer choice: an id can point at a different file
+                after the card changes.
+
+        Raises:
+            KeyError: If no pattern has that name.
+
+        Example:
+            >>> with Device.open(simulate=True) as dev:
+            ...     dev.patterns.delete("demo_gs2")
+            ...     print(dev.patterns.find("demo_gs2"), len(dev.patterns))
+            None 1
+        """
         with self._dev._lock:
-            self._dev._send(m.delete_pattern_file(pattern_id))
+            self._dev._send(m.delete_pattern_file(self._id(pattern)))
             self.refresh()
 
     def format_card(self) -> None:

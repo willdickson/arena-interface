@@ -303,6 +303,24 @@ def test_unknown_pattern_name_lists_the_card(dev: Device) -> None:
         dev.start_frames(range(2), fps=100, pattern="missing")
 
 
+def test_library_methods_take_names(dev: Device) -> None:
+    assert dev.patterns.name("DEMO_GS2") == "demo_gs2.pat"
+    assert dev.patterns.info("demo_gs16").frame_count == 16
+    assert dev.patterns.download("demo_gs2.pat") == dev.patterns.download(2)
+    new_id = dev.patterns.rename("demo_gs2", "a_renamed.pat")
+    assert (new_id, dev.patterns.name(new_id)) == (1, "a_renamed.pat")
+    dev.patterns.delete("A_Renamed")
+    assert [e.name for e in dev.patterns] == ["demo_gs16.pat"]
+    for call in (
+        lambda: dev.patterns.delete("missing"),
+        lambda: dev.patterns.rename("missing", "x.pat"),
+        lambda: dev.patterns.info("missing"),
+    ):
+        with pytest.raises(KeyError, match="patterns: demo_gs16.pat"):
+            call()
+    assert len(dev.patterns) == 1  # nothing was deleted or renamed
+
+
 def test_pattern_upload_download_delete(dev: Device) -> None:
     data = make_test_pattern(2, 10, 3)
     new_id = dev.patterns.upload("b_stripes.pat", data)
