@@ -730,6 +730,14 @@ uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </sp
 <td>The port is not a controller, or the controller is wedged; reset it or replug the cable.</td>
 </tr>
 <tr>
+<td>Connecting takes a second or more longer than usual</td>
+<td>The controller was holding stray bytes received before you connected (for example its start-up text echoed back after powering the arena on with USB connected); the library clears them automatically. Connect with logging at INFO level to see "answered after N extra request(s)".</td>
+</tr>
+<tr>
+<td>Anything else to do with connecting</td>
+<td>Run <code>uv run python scripts/connect_debug.py</code> from the repository: it connects with every byte logged, and if the controller does not answer, checks whether it still obeys ALL_ON / ALL_OFF.</td>
+</tr>
+<tr>
 <td>A brief "CE NN" glyph on the arena</td>
 <td>The controller rejected a command. The library prevents most cases; see <a href="../user-guide/#errors">Errors</a>.</td>
 </tr>
