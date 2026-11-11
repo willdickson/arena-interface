@@ -1632,7 +1632,7 @@ against the simulated controller with no hardware attached:</p>
         <span class="n">found</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"ZZ_example_08_renamed"</span><span class="p">)</span>  <span class="c1"># case, .pat optional</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found by name: id </span><span class="si">{</span><span class="n">found</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+        <span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">"zz_example_08_renamed"</span><span class="p">)</span>  <span class="c1"># by name: safer than an id</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleted; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">patterns</span><span class="p">)</span><span class="si">}</span><span class="s2"> patterns remain"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">simulate</span><span class="p">:</span>  <span class="c1"># a full card can take a while to download</span>

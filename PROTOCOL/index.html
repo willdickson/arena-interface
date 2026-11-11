@@ -2769,9 +2769,10 @@ raise the refresh rate, and check with <code>play_frames(..., verify=True)</code
   Loading the maDisplayTools YAML arena registry was planned as an option but
   dropped (2026-11-09); new arenas are added to the built-in list instead.</p>
 </li>
-<li><strong>SD patterns can be chosen by file name.</strong> <code>start_trial</code>, <code>show_pattern</code>
-  and the playback methods take <code>pattern</code>: a 1-based id or a file name
-  (decided 2026-11-09). Names match case-insensitively with <code>.pat</code> optional,
+<li><strong>SD patterns can be chosen by file name.</strong> <code>start_trial</code>, <code>show_pattern</code>,
+  the playback methods and the pattern-library methods (<code>name</code>, <code>info</code>,
+  <code>download</code>, <code>rename</code>, <code>delete</code>) take <code>pattern</code>: a 1-based id or a file name
+  (decided 2026-11-09; library methods added 2026-11-11). Names match case-insensitively with <code>.pat</code> optional,
   as FAT file names do; an unknown name raises <code>KeyError</code>. The firmware only
   loads by id, so a name is resolved by listing the card
   (GET_PATTERN_FILENAME per pattern). Ids shift when files are added, renamed
